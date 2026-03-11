@@ -1,0 +1,604 @@
+{
+  "modules": [
+    {
+      "module": "app.routes",
+      "layer": "interface",
+      "files": [
+        "app/routes/__init__.py",
+        "app/routes/user_handler.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 1,
+        "definition_count": 1,
+        "env_read_count": 0,
+        "db_signal_count": 3,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 0,
+        "cross_layer_dependency_count": 0,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 1,
+        "priority_score": 19
+      },
+      "upstream_modules": [],
+      "downstream_modules": [],
+      "cross_layer_dependencies": [],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_A",
+          "rule_name": "Handler/Controller 直接访问数据库",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/routes/user_handler.py"
+          ],
+          "evidence": [
+            "select（第 5 行，置信度=中）",
+            "session.execute（第 5 行，置信度=中）"
+          ]
+        }
+      ],
+      "priority": "P0",
+      "priority_reasons": [
+        "接口层直接接触数据库信号",
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.state",
+      "layer": "state",
+      "files": [
+        "app/state/__init__.py",
+        "app/state/cache.py",
+        "app/state/constants.py"
+      ],
+      "metrics": {
+        "file_count": 3,
+        "import_count": 0,
+        "definition_count": 2,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 1,
+        "upstream_count": 0,
+        "downstream_count": 0,
+        "cross_layer_dependency_count": 0,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 1,
+        "priority_score": 14
+      },
+      "upstream_modules": [],
+      "downstream_modules": [],
+      "cross_layer_dependencies": [],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_D",
+          "rule_name": "疑似可变全局状态",
+          "severity": "high",
+          "confirmation_status": "confirmed",
+          "confidence": "high",
+          "files": [
+            "app/state/cache.py"
+          ],
+          "evidence": [
+            "CACHE (mutable_literal，第 1 行，变更次数=1)"
+          ]
+        }
+      ],
+      "priority": "P0",
+      "priority_reasons": [
+        "存在 1 个高严重度 finding",
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.common",
+      "layer": "shared",
+      "files": [
+        "app/common/__init__.py",
+        "app/common/helpers.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 0,
+        "definition_count": 1,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 5,
+        "downstream_count": 0,
+        "cross_layer_dependency_count": 0,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 0,
+        "priority_score": 17
+      },
+      "upstream_modules": [
+        "app.feature_a",
+        "app.feature_b",
+        "app.feature_c",
+        "app.feature_d",
+        "app.feature_e"
+      ],
+      "downstream_modules": [],
+      "cross_layer_dependencies": [],
+      "matching_test_files": [],
+      "related_findings": [],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.services",
+      "layer": "service",
+      "files": [
+        "app/services/__init__.py",
+        "app/services/service_a.py",
+        "app/services/service_b.py"
+      ],
+      "metrics": {
+        "file_count": 3,
+        "import_count": 2,
+        "definition_count": 2,
+        "env_read_count": 2,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 0,
+        "cross_layer_dependency_count": 0,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 2,
+        "priority_score": 17
+      },
+      "upstream_modules": [],
+      "downstream_modules": [],
+      "cross_layer_dependencies": [],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_B",
+          "rule_name": "同一环境变量在多个文件中被直接读取",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/services/service_a.py",
+            "app/services/service_b.py"
+          ],
+          "evidence": [
+            "SHARED_FLAG 在 2 个业务文件中被直接读取",
+            "已忽略 1 个配置或测试文件中的读取"
+          ]
+        },
+        {
+          "rule_id": "RULE_B",
+          "rule_name": "同一环境变量在多个文件中被直接读取",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/services/service_a.py",
+            "app/services/service_b.py"
+          ],
+          "evidence": [
+            "SHARED_FLAG 在 2 个业务文件中被直接读取",
+            "已忽略 1 个配置或测试文件中的读取"
+          ]
+        }
+      ],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app",
+      "layer": "domain",
+      "files": [
+        "app/__init__.py",
+        "app/cycle_a.py",
+        "app/cycle_b.py"
+      ],
+      "metrics": {
+        "file_count": 3,
+        "import_count": 2,
+        "definition_count": 2,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 0,
+        "cross_layer_dependency_count": 0,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 2,
+        "priority_score": 15
+      },
+      "upstream_modules": [],
+      "downstream_modules": [],
+      "cross_layer_dependencies": [],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_E",
+          "rule_name": "检测到简单循环 Import",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/cycle_a.py",
+            "app/cycle_b.py"
+          ],
+          "evidence": [
+            "app/cycle_a.py -> app/cycle_b.py"
+          ]
+        },
+        {
+          "rule_id": "RULE_E",
+          "rule_name": "检测到简单循环 Import",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/cycle_a.py",
+            "app/cycle_b.py"
+          ],
+          "evidence": [
+            "app/cycle_a.py -> app/cycle_b.py"
+          ]
+        }
+      ],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.feature_a",
+      "layer": "domain",
+      "files": [
+        "app/feature_a/__init__.py",
+        "app/feature_a/consumer.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 1,
+        "definition_count": 1,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 1,
+        "cross_layer_dependency_count": 1,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 1,
+        "priority_score": 13
+      },
+      "upstream_modules": [],
+      "downstream_modules": [
+        "app.common"
+      ],
+      "cross_layer_dependencies": [
+        "app.common"
+      ],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_C",
+          "rule_name": "共享 Utils 模块被过度依赖",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/feature_a/consumer.py",
+            "app/feature_b/consumer.py",
+            "app/feature_c/consumer.py",
+            "app/feature_d/consumer.py",
+            "app/feature_e/consumer.py"
+          ],
+          "evidence": [
+            "app.common.helpers 被 5 个文件依赖，覆盖 5 个包"
+          ]
+        }
+      ],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.feature_b",
+      "layer": "domain",
+      "files": [
+        "app/feature_b/__init__.py",
+        "app/feature_b/consumer.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 1,
+        "definition_count": 1,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 1,
+        "cross_layer_dependency_count": 1,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 1,
+        "priority_score": 13
+      },
+      "upstream_modules": [],
+      "downstream_modules": [
+        "app.common"
+      ],
+      "cross_layer_dependencies": [
+        "app.common"
+      ],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_C",
+          "rule_name": "共享 Utils 模块被过度依赖",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/feature_a/consumer.py",
+            "app/feature_b/consumer.py",
+            "app/feature_c/consumer.py",
+            "app/feature_d/consumer.py",
+            "app/feature_e/consumer.py"
+          ],
+          "evidence": [
+            "app.common.helpers 被 5 个文件依赖，覆盖 5 个包"
+          ]
+        }
+      ],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.feature_c",
+      "layer": "domain",
+      "files": [
+        "app/feature_c/__init__.py",
+        "app/feature_c/consumer.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 1,
+        "definition_count": 1,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 1,
+        "cross_layer_dependency_count": 1,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 1,
+        "priority_score": 13
+      },
+      "upstream_modules": [],
+      "downstream_modules": [
+        "app.common"
+      ],
+      "cross_layer_dependencies": [
+        "app.common"
+      ],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_C",
+          "rule_name": "共享 Utils 模块被过度依赖",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/feature_a/consumer.py",
+            "app/feature_b/consumer.py",
+            "app/feature_c/consumer.py",
+            "app/feature_d/consumer.py",
+            "app/feature_e/consumer.py"
+          ],
+          "evidence": [
+            "app.common.helpers 被 5 个文件依赖，覆盖 5 个包"
+          ]
+        }
+      ],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.feature_d",
+      "layer": "domain",
+      "files": [
+        "app/feature_d/__init__.py",
+        "app/feature_d/consumer.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 1,
+        "definition_count": 1,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 1,
+        "cross_layer_dependency_count": 1,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 1,
+        "priority_score": 13
+      },
+      "upstream_modules": [],
+      "downstream_modules": [
+        "app.common"
+      ],
+      "cross_layer_dependencies": [
+        "app.common"
+      ],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_C",
+          "rule_name": "共享 Utils 模块被过度依赖",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/feature_a/consumer.py",
+            "app/feature_b/consumer.py",
+            "app/feature_c/consumer.py",
+            "app/feature_d/consumer.py",
+            "app/feature_e/consumer.py"
+          ],
+          "evidence": [
+            "app.common.helpers 被 5 个文件依赖，覆盖 5 个包"
+          ]
+        }
+      ],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.feature_e",
+      "layer": "domain",
+      "files": [
+        "app/feature_e/__init__.py",
+        "app/feature_e/consumer.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 1,
+        "definition_count": 1,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 1,
+        "cross_layer_dependency_count": 1,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 1,
+        "priority_score": 13
+      },
+      "upstream_modules": [],
+      "downstream_modules": [
+        "app.common"
+      ],
+      "cross_layer_dependencies": [
+        "app.common"
+      ],
+      "matching_test_files": [],
+      "related_findings": [
+        {
+          "rule_id": "RULE_C",
+          "rule_name": "共享 Utils 模块被过度依赖",
+          "severity": "medium",
+          "confirmation_status": "confirmed",
+          "confidence": "medium",
+          "files": [
+            "app/feature_a/consumer.py",
+            "app/feature_b/consumer.py",
+            "app/feature_c/consumer.py",
+            "app/feature_d/consumer.py",
+            "app/feature_e/consumer.py"
+          ],
+          "evidence": [
+            "app.common.helpers 被 5 个文件依赖，覆盖 5 个包"
+          ]
+        }
+      ],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.rendering",
+      "layer": "domain",
+      "files": [
+        "app/rendering/__init__.py",
+        "app/rendering/html_renderer.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 0,
+        "definition_count": 4,
+        "env_read_count": 0,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 0,
+        "cross_layer_dependency_count": 0,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 0,
+        "priority_score": 10
+      },
+      "upstream_modules": [],
+      "downstream_modules": [],
+      "cross_layer_dependencies": [],
+      "matching_test_files": [],
+      "related_findings": [],
+      "priority": "P1",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    },
+    {
+      "module": "app.config",
+      "layer": "configuration",
+      "files": [
+        "app/config/__init__.py",
+        "app/config/settings.py"
+      ],
+      "metrics": {
+        "file_count": 2,
+        "import_count": 1,
+        "definition_count": 0,
+        "env_read_count": 1,
+        "db_signal_count": 0,
+        "global_risk_count": 0,
+        "upstream_count": 0,
+        "downstream_count": 0,
+        "cross_layer_dependency_count": 0,
+        "matching_test_file_count": 0,
+        "git_change_count_last_200_commits": 0,
+        "finding_count": 0,
+        "priority_score": 8
+      },
+      "upstream_modules": [],
+      "downstream_modules": [],
+      "cross_layer_dependencies": [],
+      "matching_test_files": [],
+      "related_findings": [],
+      "priority": "P2",
+      "priority_reasons": [
+        "测试映射较弱"
+      ]
+    }
+  ],
+  "summary": {
+    "total_modules": 12,
+    "p0": 2,
+    "p1": 9,
+    "p2": 1
+  }
+}

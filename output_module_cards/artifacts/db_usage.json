@@ -1,0 +1,187 @@
+{
+  "files": [
+    {
+      "file": "app/__init__.py",
+      "module": "app",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/common/__init__.py",
+      "module": "app.common",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/common/helpers.py",
+      "module": "app.common.helpers",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/config/__init__.py",
+      "module": "app.config",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/config/settings.py",
+      "module": "app.config.settings",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/cycle_a.py",
+      "module": "app.cycle_a",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/cycle_b.py",
+      "module": "app.cycle_b",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_a/__init__.py",
+      "module": "app.feature_a",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_a/consumer.py",
+      "module": "app.feature_a.consumer",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_b/__init__.py",
+      "module": "app.feature_b",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "module": "app.feature_b.consumer",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_c/__init__.py",
+      "module": "app.feature_c",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "module": "app.feature_c.consumer",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_d/__init__.py",
+      "module": "app.feature_d",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_d/consumer.py",
+      "module": "app.feature_d.consumer",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_e/__init__.py",
+      "module": "app.feature_e",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/feature_e/consumer.py",
+      "module": "app.feature_e.consumer",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/rendering/__init__.py",
+      "module": "app.rendering",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "module": "app.rendering.html_renderer",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/routes/__init__.py",
+      "module": "app.routes",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/routes/user_handler.py",
+      "module": "app.routes.user_handler",
+      "signals": [
+        {
+          "kind": "import",
+          "signal": "sqlalchemy",
+          "line": 1,
+          "confidence": "high"
+        },
+        {
+          "kind": "call",
+          "signal": "select",
+          "line": 5,
+          "confidence": "medium"
+        },
+        {
+          "kind": "call",
+          "signal": "session.execute",
+          "line": 5,
+          "confidence": "medium"
+        }
+      ],
+      "signal_count": 3
+    },
+    {
+      "file": "app/services/__init__.py",
+      "module": "app.services",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/services/service_a.py",
+      "module": "app.services.service_a",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/services/service_b.py",
+      "module": "app.services.service_b",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/state/__init__.py",
+      "module": "app.state",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/state/cache.py",
+      "module": "app.state.cache",
+      "signals": [],
+      "signal_count": 0
+    },
+    {
+      "file": "app/state/constants.py",
+      "module": "app.state.constants",
+      "signals": [],
+      "signal_count": 0
+    }
+  ],
+  "files_with_signals": 1,
+  "signal_count": 3
+}

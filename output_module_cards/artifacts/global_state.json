@@ -1,0 +1,188 @@
+{
+  "files": [
+    {
+      "file": "app/__init__.py",
+      "module": "app",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/common/__init__.py",
+      "module": "app.common",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/common/helpers.py",
+      "module": "app.common.helpers",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/config/__init__.py",
+      "module": "app.config",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/config/settings.py",
+      "module": "app.config.settings",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/cycle_a.py",
+      "module": "app.cycle_a",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/cycle_b.py",
+      "module": "app.cycle_b",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_a/__init__.py",
+      "module": "app.feature_a",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_a/consumer.py",
+      "module": "app.feature_a.consumer",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_b/__init__.py",
+      "module": "app.feature_b",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "module": "app.feature_b.consumer",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_c/__init__.py",
+      "module": "app.feature_c",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "module": "app.feature_c.consumer",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_d/__init__.py",
+      "module": "app.feature_d",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_d/consumer.py",
+      "module": "app.feature_d.consumer",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_e/__init__.py",
+      "module": "app.feature_e",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/feature_e/consumer.py",
+      "module": "app.feature_e.consumer",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/rendering/__init__.py",
+      "module": "app.rendering",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "module": "app.rendering.html_renderer",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/routes/__init__.py",
+      "module": "app.routes",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/routes/user_handler.py",
+      "module": "app.routes.user_handler",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/services/__init__.py",
+      "module": "app.services",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/services/service_a.py",
+      "module": "app.services.service_a",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/services/service_b.py",
+      "module": "app.services.service_b",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/state/__init__.py",
+      "module": "app.state",
+      "globals": [],
+      "risk_count": 0
+    },
+    {
+      "file": "app/state/cache.py",
+      "module": "app.state.cache",
+      "globals": [
+        {
+          "name": "CACHE",
+          "line": 1,
+          "kind": "mutable_literal",
+          "mutable": true,
+          "risk": "high",
+          "detail": "module-level mutable collection; mutated from function scope",
+          "shared_access": true,
+          "read_lines": [
+            5,
+            6
+          ],
+          "mutation_lines": [
+            5
+          ],
+          "read_count": 2,
+          "mutation_count": 1,
+          "finding_candidate": true
+        }
+      ],
+      "risk_count": 1
+    },
+    {
+      "file": "app/state/constants.py",
+      "module": "app.state.constants",
+      "globals": [],
+      "risk_count": 0
+    }
+  ],
+  "files_with_risk": 1,
+  "risk_count": 1
+}

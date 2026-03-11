@@ -1,0 +1,18 @@
+{
+  "status": "needs_review",
+  "blocked": false,
+  "risk_level": "high",
+  "concerns": [
+    "仓库缺少明显测试，任何重构计划都应先补 characterization tests。"
+  ],
+  "required_checks": [
+    "python -m unittest",
+    "targeted regression tests"
+  ],
+  "protected_files": [],
+  "summary": "计划在执行前需要人工复核。",
+  "generation": {
+    "mode": "deterministic",
+    "source": "critic_fallback"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "reads": [
+    {
+      "file": "app/config/settings.py",
+      "module": "app.config.settings",
+      "variable": "SHARED_FLAG",
+      "access_type": "getenv",
+      "line": 4
+    },
+    {
+      "file": "app/services/service_a.py",
+      "module": "app.services.service_a",
+      "variable": "SHARED_FLAG",
+      "access_type": "getenv",
+      "line": 5
+    },
+    {
+      "file": "app/services/service_b.py",
+      "module": "app.services.service_b",
+      "variable": "SHARED_FLAG",
+      "access_type": "environ.get",
+      "line": 5
+    }
+  ],
+  "variables": [
+    {
+      "name": "SHARED_FLAG",
+      "files": [
+        "app/config/settings.py",
+        "app/services/service_a.py",
+        "app/services/service_b.py"
+      ],
+      "file_count": 3,
+      "read_count": 3
+    }
+  ]
+}

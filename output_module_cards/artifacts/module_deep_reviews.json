@@ -1,0 +1,195 @@
+{
+  "modules": [
+    {
+      "module": "app.routes",
+      "priority": "P0",
+      "layer": "interface",
+      "validator_review": {
+        "confirmation_status": "confirmed",
+        "confidence": "high",
+        "summary": "当前模块已具备进入重点审查的证据。",
+        "key_evidence": [
+          "数据库/ORM 接触点 3 个"
+        ]
+      },
+      "planner_review": {
+        "recommend_change": "yes",
+        "priority": "high",
+        "actions": [
+          "下沉依赖",
+          "补测试"
+        ],
+        "test_recommendations": [
+          "先补最小 characterization tests。",
+          "补接口层到服务层边界的回归测试。"
+        ],
+        "summary": "建议优先针对模块边界和测试薄弱点做受控治理。"
+      },
+      "critic_review": {
+        "review_status": "needs_review",
+        "risk_level": "high",
+        "concerns": [
+          "测试映射较弱，改动前应先补最小回归测试。"
+        ],
+        "summary": "当前模块值得推进，但必须保持小范围、可验证的改动。"
+      },
+      "generation": {
+        "mode": "deterministic_fallback",
+        "errors": []
+      }
+    },
+    {
+      "module": "app.state",
+      "priority": "P0",
+      "layer": "state",
+      "validator_review": {
+        "confirmation_status": "confirmed",
+        "confidence": "high",
+        "summary": "当前模块已具备进入重点审查的证据。",
+        "key_evidence": [
+          "全局状态风险点 1 个"
+        ]
+      },
+      "planner_review": {
+        "recommend_change": "yes",
+        "priority": "high",
+        "actions": [
+          "补测试",
+          "隔离状态"
+        ],
+        "test_recommendations": [
+          "先补最小 characterization tests。",
+          "补共享状态行为测试和并发/顺序测试。"
+        ],
+        "summary": "建议优先针对模块边界和测试薄弱点做受控治理。"
+      },
+      "critic_review": {
+        "review_status": "needs_review",
+        "risk_level": "high",
+        "concerns": [
+          "测试映射较弱，改动前应先补最小回归测试。"
+        ],
+        "summary": "当前模块值得推进，但必须保持小范围、可验证的改动。"
+      },
+      "generation": {
+        "mode": "deterministic_fallback",
+        "errors": []
+      }
+    },
+    {
+      "module": "app.common",
+      "priority": "P1",
+      "layer": "shared",
+      "validator_review": {
+        "confirmation_status": "needs_review",
+        "confidence": "medium",
+        "summary": "当前模块值得继续观察，但仍建议结合更多上下文确认。",
+        "key_evidence": [
+          "当前主要依赖综合风险分排序进入重点观察队列"
+        ]
+      },
+      "planner_review": {
+        "recommend_change": "yes",
+        "priority": "medium",
+        "actions": [
+          "补测试"
+        ],
+        "test_recommendations": [
+          "先补最小 characterization tests。"
+        ],
+        "summary": "建议优先针对模块边界和测试薄弱点做受控治理。"
+      },
+      "critic_review": {
+        "review_status": "needs_review",
+        "risk_level": "medium",
+        "concerns": [
+          "测试映射较弱，改动前应先补最小回归测试。",
+          "高扇入模块，改动影响面较大。"
+        ],
+        "summary": "当前模块值得推进，但必须保持小范围、可验证的改动。"
+      },
+      "generation": {
+        "mode": "deterministic_fallback",
+        "errors": []
+      }
+    },
+    {
+      "module": "app.services",
+      "priority": "P1",
+      "layer": "service",
+      "validator_review": {
+        "confirmation_status": "confirmed",
+        "confidence": "medium",
+        "summary": "当前模块已具备进入重点审查的证据。",
+        "key_evidence": [
+          "当前主要依赖综合风险分排序进入重点观察队列"
+        ]
+      },
+      "planner_review": {
+        "recommend_change": "yes",
+        "priority": "medium",
+        "actions": [
+          "提取配置",
+          "补测试"
+        ],
+        "test_recommendations": [
+          "先补最小 characterization tests。"
+        ],
+        "summary": "建议优先针对模块边界和测试薄弱点做受控治理。"
+      },
+      "critic_review": {
+        "review_status": "needs_review",
+        "risk_level": "medium",
+        "concerns": [
+          "测试映射较弱，改动前应先补最小回归测试。"
+        ],
+        "summary": "当前模块值得推进，但必须保持小范围、可验证的改动。"
+      },
+      "generation": {
+        "mode": "deterministic_fallback",
+        "errors": []
+      }
+    },
+    {
+      "module": "app",
+      "priority": "P1",
+      "layer": "domain",
+      "validator_review": {
+        "confirmation_status": "confirmed",
+        "confidence": "medium",
+        "summary": "当前模块已具备进入重点审查的证据。",
+        "key_evidence": [
+          "当前主要依赖综合风险分排序进入重点观察队列"
+        ]
+      },
+      "planner_review": {
+        "recommend_change": "yes",
+        "priority": "medium",
+        "actions": [
+          "补测试"
+        ],
+        "test_recommendations": [
+          "先补最小 characterization tests。"
+        ],
+        "summary": "建议优先针对模块边界和测试薄弱点做受控治理。"
+      },
+      "critic_review": {
+        "review_status": "needs_review",
+        "risk_level": "medium",
+        "concerns": [
+          "测试映射较弱，改动前应先补最小回归测试。"
+        ],
+        "summary": "当前模块值得推进，但必须保持小范围、可验证的改动。"
+      },
+      "generation": {
+        "mode": "deterministic_fallback",
+        "errors": []
+      }
+    }
+  ],
+  "summary": {
+    "reviewed_modules": 5,
+    "llm_reviewed_modules": 0,
+    "deterministic_modules": 5
+  }
+}

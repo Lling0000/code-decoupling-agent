@@ -1,0 +1,57 @@
+{
+  "dependencies": [
+    {
+      "file": "app/feature_a/consumer.py",
+      "module": "app.common.helpers",
+      "line": 1,
+      "consumer_package": "app.feature_a"
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "module": "app.common.helpers",
+      "line": 1,
+      "consumer_package": "app.feature_b"
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "module": "app.common.helpers",
+      "line": 1,
+      "consumer_package": "app.feature_c"
+    },
+    {
+      "file": "app/feature_d/consumer.py",
+      "module": "app.common.helpers",
+      "line": 1,
+      "consumer_package": "app.feature_d"
+    },
+    {
+      "file": "app/feature_e/consumer.py",
+      "module": "app.common.helpers",
+      "line": 1,
+      "consumer_package": "app.feature_e"
+    }
+  ],
+  "modules": [
+    {
+      "module": "app.common.helpers",
+      "files": [
+        "app/feature_a/consumer.py",
+        "app/feature_b/consumer.py",
+        "app/feature_c/consumer.py",
+        "app/feature_d/consumer.py",
+        "app/feature_e/consumer.py"
+      ],
+      "file_count": 5,
+      "consumer_packages": [
+        "app.feature_a",
+        "app.feature_b",
+        "app.feature_c",
+        "app.feature_d",
+        "app.feature_e"
+      ],
+      "consumer_package_count": 5,
+      "overuse_threshold": 5
+    }
+  ],
+  "threshold": 5
+}

@@ -1,0 +1,114 @@
+{
+  "groups": {
+    "P0": [
+      {
+        "module": "app.routes",
+        "layer": "interface",
+        "priority_score": 19,
+        "priority_reasons": [
+          "接口层直接接触数据库信号",
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.state",
+        "layer": "state",
+        "priority_score": 14,
+        "priority_reasons": [
+          "存在 1 个高严重度 finding",
+          "测试映射较弱"
+        ]
+      }
+    ],
+    "P1": [
+      {
+        "module": "app.common",
+        "layer": "shared",
+        "priority_score": 17,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.services",
+        "layer": "service",
+        "priority_score": 17,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app",
+        "layer": "domain",
+        "priority_score": 15,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.feature_a",
+        "layer": "domain",
+        "priority_score": 13,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.feature_b",
+        "layer": "domain",
+        "priority_score": 13,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.feature_c",
+        "layer": "domain",
+        "priority_score": 13,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.feature_d",
+        "layer": "domain",
+        "priority_score": 13,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.feature_e",
+        "layer": "domain",
+        "priority_score": 13,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      },
+      {
+        "module": "app.rendering",
+        "layer": "domain",
+        "priority_score": 10,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      }
+    ],
+    "P2": [
+      {
+        "module": "app.config",
+        "layer": "configuration",
+        "priority_score": 8,
+        "priority_reasons": [
+          "测试映射较弱"
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "total_modules": 12,
+    "p0": 2,
+    "p1": 9,
+    "p2": 1
+  }
+}

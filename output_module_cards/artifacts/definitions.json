@@ -1,0 +1,277 @@
+{
+  "files": [
+    {
+      "file": "app/__init__.py",
+      "module": "app",
+      "definitions": []
+    },
+    {
+      "file": "app/common/__init__.py",
+      "module": "app.common",
+      "definitions": []
+    },
+    {
+      "file": "app/common/helpers.py",
+      "module": "app.common.helpers",
+      "definitions": [
+        {
+          "name": "normalize",
+          "qualified_name": "app.common.helpers.normalize",
+          "type": "function",
+          "line": 1,
+          "end_line": 2
+        }
+      ]
+    },
+    {
+      "file": "app/config/__init__.py",
+      "module": "app.config",
+      "definitions": []
+    },
+    {
+      "file": "app/config/settings.py",
+      "module": "app.config.settings",
+      "definitions": []
+    },
+    {
+      "file": "app/cycle_a.py",
+      "module": "app.cycle_a",
+      "definitions": [
+        {
+          "name": "run",
+          "qualified_name": "app.cycle_a.run",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/cycle_b.py",
+      "module": "app.cycle_b",
+      "definitions": [
+        {
+          "name": "run",
+          "qualified_name": "app.cycle_b.run",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_a/__init__.py",
+      "module": "app.feature_a",
+      "definitions": []
+    },
+    {
+      "file": "app/feature_a/consumer.py",
+      "module": "app.feature_a.consumer",
+      "definitions": [
+        {
+          "name": "run",
+          "qualified_name": "app.feature_a.consumer.run",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_b/__init__.py",
+      "module": "app.feature_b",
+      "definitions": []
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "module": "app.feature_b.consumer",
+      "definitions": [
+        {
+          "name": "run",
+          "qualified_name": "app.feature_b.consumer.run",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_c/__init__.py",
+      "module": "app.feature_c",
+      "definitions": []
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "module": "app.feature_c.consumer",
+      "definitions": [
+        {
+          "name": "run",
+          "qualified_name": "app.feature_c.consumer.run",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_d/__init__.py",
+      "module": "app.feature_d",
+      "definitions": []
+    },
+    {
+      "file": "app/feature_d/consumer.py",
+      "module": "app.feature_d.consumer",
+      "definitions": [
+        {
+          "name": "run",
+          "qualified_name": "app.feature_d.consumer.run",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_e/__init__.py",
+      "module": "app.feature_e",
+      "definitions": []
+    },
+    {
+      "file": "app/feature_e/consumer.py",
+      "module": "app.feature_e.consumer",
+      "definitions": [
+        {
+          "name": "run",
+          "qualified_name": "app.feature_e.consumer.run",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/rendering/__init__.py",
+      "module": "app.rendering",
+      "definitions": []
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "module": "app.rendering.html_renderer",
+      "definitions": [
+        {
+          "name": "select",
+          "qualified_name": "app.rendering.html_renderer.select",
+          "type": "function",
+          "line": 1,
+          "end_line": 2
+        },
+        {
+          "name": "Session",
+          "qualified_name": "app.rendering.html_renderer.Session",
+          "type": "class",
+          "line": 5,
+          "end_line": 7
+        },
+        {
+          "name": "execute",
+          "qualified_name": "app.rendering.html_renderer.Session.execute",
+          "type": "method",
+          "line": 6,
+          "end_line": 7
+        },
+        {
+          "name": "render",
+          "qualified_name": "app.rendering.html_renderer.render",
+          "type": "function",
+          "line": 10,
+          "end_line": 12
+        }
+      ]
+    },
+    {
+      "file": "app/routes/__init__.py",
+      "module": "app.routes",
+      "definitions": []
+    },
+    {
+      "file": "app/routes/user_handler.py",
+      "module": "app.routes.user_handler",
+      "definitions": [
+        {
+          "name": "list_users",
+          "qualified_name": "app.routes.user_handler.list_users",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/services/__init__.py",
+      "module": "app.services",
+      "definitions": []
+    },
+    {
+      "file": "app/services/service_a.py",
+      "module": "app.services.service_a",
+      "definitions": [
+        {
+          "name": "read_flag",
+          "qualified_name": "app.services.service_a.read_flag",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/services/service_b.py",
+      "module": "app.services.service_b",
+      "definitions": [
+        {
+          "name": "read_flag",
+          "qualified_name": "app.services.service_b.read_flag",
+          "type": "function",
+          "line": 4,
+          "end_line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/state/__init__.py",
+      "module": "app.state",
+      "definitions": []
+    },
+    {
+      "file": "app/state/cache.py",
+      "module": "app.state.cache",
+      "definitions": [
+        {
+          "name": "remember",
+          "qualified_name": "app.state.cache.remember",
+          "type": "function",
+          "line": 4,
+          "end_line": 6
+        }
+      ]
+    },
+    {
+      "file": "app/state/constants.py",
+      "module": "app.state.constants",
+      "definitions": [
+        {
+          "name": "get_prompt",
+          "qualified_name": "app.state.constants.get_prompt",
+          "type": "function",
+          "line": 5,
+          "end_line": 6
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "functions": 15,
+    "classes": 1,
+    "methods": 1
+  }
+}

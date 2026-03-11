@@ -1,0 +1,9 @@
+{
+  "role": "planner_triage_review",
+  "mode": "deterministic_fallback",
+  "used_live_llm": false,
+  "provider": "bailian",
+  "model": "deepseek-v3.2",
+  "response_id": null,
+  "error": null
+}

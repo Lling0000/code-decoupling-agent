@@ -1,0 +1,149 @@
+{
+  "config_path": "D:\\agentAI\\code-decoupling-agent\\config\\agent_models.json",
+  "providers": [
+    {
+      "provider_id": "bailian",
+      "display_name": "Alibaba Cloud Bailian / DashScope Compatible API",
+      "api_key_env": "DASHSCOPE_API_KEY",
+      "base_url_env": "DASHSCOPE_BASE_URL",
+      "base_url_env_aliases": [
+        "BAILIAN_BASE_URL"
+      ],
+      "base_url_env_resolved_from": "DASHSCOPE_BASE_URL",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "configured": true,
+      "configured_model_envs": {
+        "DASHSCOPE_MODEL": null,
+        "BAILIAN_MODEL": null,
+        "CODER_MODEL": null,
+        "PLANNER_MODEL": null
+      },
+      "notes": "Single provider blueprint for multi-model routing. Planner and coder roles can be switched independently via environment variables."
+    }
+  ],
+  "assignments": [
+    {
+      "role": "governor_orchestration",
+      "provider": "bailian",
+      "logical_model": "deepseek-v3.2",
+      "api_model": "deepseek-v3.2",
+      "model_env": "PLANNER_MODEL",
+      "mode": "thinking",
+      "responsibilities": [
+        "task orchestration",
+        "bounded planning",
+        "finding triage",
+        "critic review"
+      ],
+      "why": "High-leverage reasoning work benefits from a dedicated planner model override."
+    },
+    {
+      "role": "planner_triage_review",
+      "provider": "bailian",
+      "logical_model": "deepseek-v3.2",
+      "api_model": "deepseek-v3.2",
+      "model_env": "PLANNER_MODEL",
+      "mode": "thinking",
+      "responsibilities": [
+        "priority scoring",
+        "risk evaluation",
+        "step planning",
+        "review comments"
+      ],
+      "why": "Planning and critique need stronger structured reasoning than raw code emission."
+    },
+    {
+      "role": "finding_validation",
+      "provider": "bailian",
+      "logical_model": "deepseek-v3.2",
+      "api_model": "deepseek-v3.2",
+      "model_env": "PLANNER_MODEL",
+      "mode": "thinking",
+      "responsibilities": [
+        "finding confirmation",
+        "confidence scoring",
+        "false-positive filtering",
+        "evidence validation"
+      ],
+      "why": "Finding validation benefits from the same strong reasoning tier used for planning and critique."
+    },
+    {
+      "role": "critic_review",
+      "provider": "bailian",
+      "logical_model": "deepseek-v3.2",
+      "api_model": "deepseek-v3.2",
+      "model_env": "PLANNER_MODEL",
+      "mode": "thinking",
+      "responsibilities": [
+        "plan review",
+        "risk assessment",
+        "guardrail critique",
+        "required-check recommendations"
+      ],
+      "why": "Critique should use the same high-reasoning model family unless split later."
+    },
+    {
+      "role": "refactor_and_test_fix",
+      "provider": "bailian",
+      "logical_model": "qwen3-coder-flash",
+      "api_model": "qwen3-coder-flash",
+      "model_env": "CODER_MODEL",
+      "mode": "coding",
+      "responsibilities": [
+        "small bug fixes",
+        "multi-file edits",
+        "test generation",
+        "patch drafting"
+      ],
+      "why": "Fast coding model is a better cost/performance fit for code-editing loops."
+    },
+    {
+      "role": "summary_and_pr_copy",
+      "provider": "bailian",
+      "logical_model": "qwen3.5-flash",
+      "api_model": "qwen3.5-flash",
+      "model_env": "DASHSCOPE_MODEL",
+      "model_env_aliases": [
+        "BAILIAN_MODEL"
+      ],
+      "mode": "fast_generation",
+      "responsibilities": [
+        "scan result explanation",
+        "PR descriptions",
+        "cheap summaries"
+      ],
+      "why": "Low-cost summarization should not consume premium reasoning capacity."
+    },
+    {
+      "role": "embedding",
+      "provider": "bailian",
+      "logical_model": "text-embedding-v4",
+      "api_model": "text-embedding-v4",
+      "model_env": null,
+      "mode": "retrieval",
+      "responsibilities": [
+        "vector indexing",
+        "semantic recall"
+      ],
+      "why": "Current embedding tier supports code and multilingual retrieval use cases."
+    },
+    {
+      "role": "rerank",
+      "provider": "bailian",
+      "logical_model": "qwen3-rerank",
+      "api_model": "qwen3-rerank",
+      "model_env": null,
+      "mode": "retrieval",
+      "responsibilities": [
+        "candidate reranking",
+        "retrieval precision boost"
+      ],
+      "why": "Cheap rerank improves recall precision without moving all work to a larger generation model."
+    }
+  ],
+  "policy": {
+    "external_llm_calls_enabled": false,
+    "status": "disabled",
+    "explanation": "This repository stores DashScope-compatible model routing defaults in config/agent_models.json, and live Planner/Critic agent calls run when provider config is available."
+  }
+}

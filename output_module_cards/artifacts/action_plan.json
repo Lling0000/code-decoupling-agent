@@ -1,0 +1,156 @@
+{
+  "strategy": "多 Agent 规划，确定性工具负责执行约束",
+  "plan_window": 5,
+  "steps": [
+    {
+      "step_id": "STEP-01",
+      "title": "隔离模块级可变状态",
+      "category": "state_isolation",
+      "priority": "P0",
+      "owner": "Refactor Agent",
+      "files": [
+        "app/state/cache.py"
+      ],
+      "finding_rule": "RULE_D",
+      "rationale": "模块级可变对象在函数作用域中被修改，说明共享状态正在跨函数传播，副作用会更难追踪。",
+      "success_criteria": [
+        "可变全局状态被迁移到显式对象或工厂中。",
+        "共享状态的访问路径清晰且可测试。"
+      ],
+      "rollback_conditions": [
+        "初始化顺序或共享缓存语义出现未预期变化。"
+      ],
+      "deterministic_tools": [
+        "pytest"
+      ],
+      "guarded_by": [
+        "Policy Engine",
+        "Critic Agent",
+        "Tool Runner"
+      ]
+    },
+    {
+      "step_id": "STEP-02",
+      "title": "拆分过载的共享工具依赖",
+      "category": "shared_dependency_cleanup",
+      "priority": "P1",
+      "owner": "Refactor Agent",
+      "files": [
+        "app/feature_a/consumer.py",
+        "app/feature_b/consumer.py",
+        "app/feature_c/consumer.py",
+        "app/feature_d/consumer.py",
+        "app/feature_e/consumer.py"
+      ],
+      "finding_rule": "RULE_C",
+      "rationale": "共享 utils/common/helper 模块被多个包横向依赖，通常意味着跨领域的隐式耦合正在累积。",
+      "success_criteria": [
+        "高扇入工具模块被拆成更聚焦的领域模块。",
+        "共享 helper 模块的 import 扇入明显下降。"
+      ],
+      "rollback_conditions": [
+        "跨模块依赖不降反升。"
+      ],
+      "deterministic_tools": [
+        "pytest",
+        "ruff"
+      ],
+      "guarded_by": [
+        "Policy Engine",
+        "Critic Agent",
+        "Tool Runner"
+      ]
+    },
+    {
+      "step_id": "STEP-03",
+      "title": "集中管理环境变量读取",
+      "category": "configuration_centralization",
+      "priority": "P1",
+      "owner": "Planner Agent",
+      "files": [
+        "app/services/service_a.py",
+        "app/services/service_b.py"
+      ],
+      "finding_rule": "RULE_B",
+      "rationale": "同一个环境变量在多个业务文件中被直接读取，会让配置入口分散，增加修改和排查时的耦合成本。",
+      "success_criteria": [
+        "共享环境变量只在一个配置模块中读取。",
+        "业务模块依赖配置对象，而不是直接读取环境变量。"
+      ],
+      "rollback_conditions": [
+        "默认配置或启动行为出现未预期变化。"
+      ],
+      "deterministic_tools": [
+        "pytest"
+      ],
+      "guarded_by": [
+        "Policy Engine",
+        "Critic Agent",
+        "Tool Runner"
+      ]
+    },
+    {
+      "step_id": "STEP-04",
+      "title": "通过提取接口或边界打破循环依赖",
+      "category": "dependency_breakup",
+      "priority": "P1",
+      "owner": "Planner Agent",
+      "files": [
+        "app/cycle_a.py",
+        "app/cycle_b.py"
+      ],
+      "finding_rule": "RULE_E",
+      "rationale": "发现了强连通的 import 组件。循环依赖通常会增加初始化脆弱性，并让模块边界更难维护。",
+      "success_criteria": [
+        "import graph 中的简单循环依赖被消除。",
+        "共享契约被提取到稳定的中间模块。"
+      ],
+      "rollback_conditions": [
+        "为打破循环而引入超出预期的大范围改动。"
+      ],
+      "deterministic_tools": [
+        "pytest",
+        "ruff"
+      ],
+      "guarded_by": [
+        "Policy Engine",
+        "Critic Agent",
+        "Tool Runner"
+      ]
+    },
+    {
+      "step_id": "STEP-05",
+      "title": "将数据库访问从请求层抽离出去",
+      "category": "architecture_boundary",
+      "priority": "P1",
+      "owner": "Refactor Agent",
+      "files": [
+        "app/routes/user_handler.py"
+      ],
+      "finding_rule": "RULE_A",
+      "rationale": "请求层文件中直接出现数据库或 ORM 操作，通常说明业务边界和数据访问边界没有被清晰隔离。",
+      "success_criteria": [
+        "handler/controller 文件中不再直接出现数据库访问操作。",
+        "数据库访问被收敛到显式的 service 或 repository 边界之后。"
+      ],
+      "rollback_conditions": [
+        "接口行为出现未预期变化。",
+        "相关接口测试或集成测试失败。"
+      ],
+      "deterministic_tools": [
+        "pytest",
+        "ruff"
+      ],
+      "guarded_by": [
+        "Policy Engine",
+        "Critic Agent",
+        "Tool Runner"
+      ]
+    }
+  ],
+  "backlog": [],
+  "generation": {
+    "mode": "deterministic",
+    "source": "planner_fallback"
+  }
+}

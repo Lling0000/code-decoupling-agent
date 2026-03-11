@@ -1,0 +1,98 @@
+{
+  "scanned_files": 27,
+  "parse_errors": 0,
+  "finding_count": 5,
+  "has_tests": false,
+  "hotspots": [
+    {
+      "file": "app/routes/user_handler.py",
+      "module": "app.routes.user_handler",
+      "score": 7,
+      "import_count": 1,
+      "env_read_count": 0,
+      "db_signal_count": 3,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/config/settings.py",
+      "module": "app.config.settings",
+      "score": 2,
+      "import_count": 1,
+      "env_read_count": 1,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/services/service_a.py",
+      "module": "app.services.service_a",
+      "score": 2,
+      "import_count": 1,
+      "env_read_count": 1,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/services/service_b.py",
+      "module": "app.services.service_b",
+      "score": 2,
+      "import_count": 1,
+      "env_read_count": 1,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/state/cache.py",
+      "module": "app.state.cache",
+      "score": 2,
+      "import_count": 0,
+      "env_read_count": 0,
+      "db_signal_count": 0,
+      "global_risk_count": 1
+    },
+    {
+      "file": "app/cycle_a.py",
+      "module": "app.cycle_a",
+      "score": 1,
+      "import_count": 1,
+      "env_read_count": 0,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/cycle_b.py",
+      "module": "app.cycle_b",
+      "score": 1,
+      "import_count": 1,
+      "env_read_count": 0,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/feature_a/consumer.py",
+      "module": "app.feature_a.consumer",
+      "score": 1,
+      "import_count": 1,
+      "env_read_count": 0,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "module": "app.feature_b.consumer",
+      "score": 1,
+      "import_count": 1,
+      "env_read_count": 0,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "module": "app.feature_c.consumer",
+      "score": 1,
+      "import_count": 1,
+      "env_read_count": 0,
+      "db_signal_count": 0,
+      "global_risk_count": 0
+    }
+  ]
+}

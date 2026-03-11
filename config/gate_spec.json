@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "description": "迭代门禁规范。只有通过测试、策略和运行门禁的改动，才允许进入下一轮。",
+  "baseline_policy": {
+    "mode": "no_regression_from_baseline",
+    "description": "如果目标仓库基线已带病，后续迭代至少不能让测试、策略或运行状态比基线更差。"
+  },
+  "gate_order": [
+    "test_gate",
+    "policy_gate",
+    "runtime_gate"
+  ],
+  "gates": [
+    {
+      "gate_id": "test_gate",
+      "display_name": "测试门禁",
+      "purpose": "保证本系统和目标仓库在本轮迭代后仍然可验证。",
+      "required_checks": [
+        {
+          "check_id": "system_test_suite",
+          "owner": "Tool Runner",
+          "status": "implemented",
+          "evidence": "python -m unittest -v"
+        },
+        {
+          "check_id": "golden_regression_suite",
+          "owner": "Tool Runner",
+          "status": "implemented",
+          "evidence": "tests/test_goldens.py"
+        },
+        {
+          "check_id": "target_repo_regression_suite",
+          "owner": "Verifier",
+          "status": "planned",
+          "evidence": "目标仓库测试命令或最小回归用例"
+        }
+      ],
+      "pass_condition": "all_required_checks_pass",
+      "failure_decision": "blocked"
+    },
+    {
+      "gate_id": "policy_gate",
+      "display_name": "策略门禁",
+      "purpose": "保证计划和未来执行不会越过受保护边界。",
+      "required_checks": [
+        {
+          "check_id": "protected_path_check",
+          "owner": "Policy Engine",
+          "status": "implemented",
+          "evidence": "policy/engine.py"
+        },
+        {
+          "check_id": "step_scope_check",
+          "owner": "Policy Engine",
+          "status": "implemented",
+          "evidence": "oversized step detection"
+        },
+        {
+          "check_id": "no_auto_execution_check",
+          "owner": "Critic Agent",
+          "status": "implemented",
+          "evidence": "Critic summary + policy result"
+        }
+      ],
+      "pass_condition": "all_required_checks_pass",
+      "failure_decision": "blocked"
+    },
+    {
+      "gate_id": "runtime_gate",
+      "display_name": "运行门禁",
+      "purpose": "保证目标仓库在本轮迭代后仍可启动、可执行最小入口。",
+      "required_checks": [
+        {
+          "check_id": "target_repo_entrypoint_smoke_run",
+          "owner": "Verifier",
+          "status": "planned",
+          "evidence": "主入口最小启动命令"
+        },
+        {
+          "check_id": "target_repo_core_command_check",
+          "owner": "Verifier",
+          "status": "planned",
+          "evidence": "关键命令或核心路径 smoke run"
+        },
+        {
+          "check_id": "artifact_completeness_check",
+          "owner": "CLI",
+          "status": "implemented",
+          "evidence": "summary.md + artifacts/*.json"
+        }
+      ],
+      "pass_condition": "all_required_checks_pass_or_baseline_not_worsened",
+      "failure_decision": "blocked"
+    }
+  ],
+  "iteration_decisions": {
+    "allow_next_iteration": {
+      "requires_gates": [
+        "test_gate",
+        "policy_gate",
+        "runtime_gate"
+      ],
+      "requires_reports": [
+        "iteration_agent_report.json",
+        "iteration_human_report.md"
+      ],
+      "description": "只有三类门禁全部通过，且本轮双报告齐全时，才允许进入下一轮。"
+    },
+    "hold_for_review": {
+      "description": "如果测试通过但存在中高风险 concerns 或人工确认项，则暂停自动推进，等待人工审查。"
+    },
+    "blocked": {
+      "description": "任何一类门禁失败，或目标仓库不可运行，均必须停止迭代。"
+    }
+  }
+}

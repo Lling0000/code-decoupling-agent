@@ -1,0 +1,317 @@
+{
+  "files": [
+    {
+      "file": "app/__init__.py",
+      "module": "app",
+      "calls": []
+    },
+    {
+      "file": "app/common/__init__.py",
+      "module": "app.common",
+      "calls": []
+    },
+    {
+      "file": "app/common/helpers.py",
+      "module": "app.common.helpers",
+      "calls": [
+        {
+          "caller": "app.common.helpers.normalize",
+          "callee": "value.strip",
+          "line": 2
+        },
+        {
+          "caller": "app.common.helpers.normalize",
+          "callee": "value.strip().lower",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "file": "app/config/__init__.py",
+      "module": "app.config",
+      "calls": []
+    },
+    {
+      "file": "app/config/settings.py",
+      "module": "app.config.settings",
+      "calls": []
+    },
+    {
+      "file": "app/cycle_a.py",
+      "module": "app.cycle_a",
+      "calls": [
+        {
+          "caller": "app.cycle_a.run",
+          "callee": "app.cycle_b.run",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/cycle_b.py",
+      "module": "app.cycle_b",
+      "calls": []
+    },
+    {
+      "file": "app/feature_a/__init__.py",
+      "module": "app.feature_a",
+      "calls": []
+    },
+    {
+      "file": "app/feature_a/consumer.py",
+      "module": "app.feature_a.consumer",
+      "calls": [
+        {
+          "caller": "app.feature_a.consumer.run",
+          "callee": "normalize",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_b/__init__.py",
+      "module": "app.feature_b",
+      "calls": []
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "module": "app.feature_b.consumer",
+      "calls": [
+        {
+          "caller": "app.feature_b.consumer.run",
+          "callee": "normalize",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_c/__init__.py",
+      "module": "app.feature_c",
+      "calls": []
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "module": "app.feature_c.consumer",
+      "calls": [
+        {
+          "caller": "app.feature_c.consumer.run",
+          "callee": "normalize",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_d/__init__.py",
+      "module": "app.feature_d",
+      "calls": []
+    },
+    {
+      "file": "app/feature_d/consumer.py",
+      "module": "app.feature_d.consumer",
+      "calls": [
+        {
+          "caller": "app.feature_d.consumer.run",
+          "callee": "normalize",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/feature_e/__init__.py",
+      "module": "app.feature_e",
+      "calls": []
+    },
+    {
+      "file": "app/feature_e/consumer.py",
+      "module": "app.feature_e.consumer",
+      "calls": [
+        {
+          "caller": "app.feature_e.consumer.run",
+          "callee": "normalize",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/rendering/__init__.py",
+      "module": "app.rendering",
+      "calls": []
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "module": "app.rendering.html_renderer",
+      "calls": [
+        {
+          "caller": "app.rendering.html_renderer.render",
+          "callee": "Session",
+          "line": 11
+        },
+        {
+          "caller": "app.rendering.html_renderer.render",
+          "callee": "select",
+          "line": 12
+        },
+        {
+          "caller": "app.rendering.html_renderer.render",
+          "callee": "session.execute",
+          "line": 12
+        }
+      ]
+    },
+    {
+      "file": "app/routes/__init__.py",
+      "module": "app.routes",
+      "calls": []
+    },
+    {
+      "file": "app/routes/user_handler.py",
+      "module": "app.routes.user_handler",
+      "calls": [
+        {
+          "caller": "app.routes.user_handler.list_users",
+          "callee": "select",
+          "line": 5
+        },
+        {
+          "caller": "app.routes.user_handler.list_users",
+          "callee": "session.execute",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/services/__init__.py",
+      "module": "app.services",
+      "calls": []
+    },
+    {
+      "file": "app/services/service_a.py",
+      "module": "app.services.service_a",
+      "calls": [
+        {
+          "caller": "app.services.service_a.read_flag",
+          "callee": "os.getenv",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/services/service_b.py",
+      "module": "app.services.service_b",
+      "calls": [
+        {
+          "caller": "app.services.service_b.read_flag",
+          "callee": "os.environ.get",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "file": "app/state/__init__.py",
+      "module": "app.state",
+      "calls": []
+    },
+    {
+      "file": "app/state/cache.py",
+      "module": "app.state.cache",
+      "calls": []
+    },
+    {
+      "file": "app/state/constants.py",
+      "module": "app.state.constants",
+      "calls": []
+    }
+  ],
+  "edges": [
+    {
+      "file": "app/common/helpers.py",
+      "caller": "app.common.helpers.normalize",
+      "callee": "value.strip",
+      "line": 2
+    },
+    {
+      "file": "app/common/helpers.py",
+      "caller": "app.common.helpers.normalize",
+      "callee": "value.strip().lower",
+      "line": 2
+    },
+    {
+      "file": "app/cycle_a.py",
+      "caller": "app.cycle_a.run",
+      "callee": "app.cycle_b.run",
+      "line": 5
+    },
+    {
+      "file": "app/feature_a/consumer.py",
+      "caller": "app.feature_a.consumer.run",
+      "callee": "normalize",
+      "line": 5
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "caller": "app.feature_b.consumer.run",
+      "callee": "normalize",
+      "line": 5
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "caller": "app.feature_c.consumer.run",
+      "callee": "normalize",
+      "line": 5
+    },
+    {
+      "file": "app/feature_d/consumer.py",
+      "caller": "app.feature_d.consumer.run",
+      "callee": "normalize",
+      "line": 5
+    },
+    {
+      "file": "app/feature_e/consumer.py",
+      "caller": "app.feature_e.consumer.run",
+      "callee": "normalize",
+      "line": 5
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "caller": "app.rendering.html_renderer.render",
+      "callee": "Session",
+      "line": 11
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "caller": "app.rendering.html_renderer.render",
+      "callee": "select",
+      "line": 12
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "caller": "app.rendering.html_renderer.render",
+      "callee": "session.execute",
+      "line": 12
+    },
+    {
+      "file": "app/routes/user_handler.py",
+      "caller": "app.routes.user_handler.list_users",
+      "callee": "select",
+      "line": 5
+    },
+    {
+      "file": "app/routes/user_handler.py",
+      "caller": "app.routes.user_handler.list_users",
+      "callee": "session.execute",
+      "line": 5
+    },
+    {
+      "file": "app/services/service_a.py",
+      "caller": "app.services.service_a.read_flag",
+      "callee": "os.getenv",
+      "line": 5
+    },
+    {
+      "file": "app/services/service_b.py",
+      "caller": "app.services.service_b.read_flag",
+      "callee": "os.environ.get",
+      "line": 5
+    }
+  ]
+}

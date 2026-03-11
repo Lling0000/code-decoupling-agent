@@ -1,0 +1,19 @@
+{
+  "module_id": "{{ module_id }}",
+  "module_type": "{{ module_type }}",
+  "status": "passed",
+  "inputs_ok": true,
+  "outputs_ok": true,
+  "tests": {
+    "passed": 0,
+    "failed": 0,
+    "coverage": null,
+    "regressions": []
+  },
+  "artifacts": [
+    "{{ artifact_path }}"
+  ],
+  "risks": [],
+  "gate_decision": "allow_next_stage",
+  "notes": "使用这个模板为 agent 输出稳定、可比较的模块结果。"
+}

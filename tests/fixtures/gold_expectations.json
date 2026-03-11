@@ -1,0 +1,13 @@
+{
+  "expected_rule_ids": ["RULE_A", "RULE_B", "RULE_C", "RULE_D", "RULE_E"],
+  "expected_rule_files": {
+    "RULE_A": ["app/routes/user_handler.py"],
+    "RULE_B": ["app/services/service_a.py", "app/services/service_b.py"],
+    "RULE_D": ["app/state/cache.py"]
+  },
+  "expected_cycle_files": ["app/cycle_a.py", "app/cycle_b.py"],
+  "utils_module": "app.common.helpers",
+  "utils_consumer_package_count": 5,
+  "db_noise_absent_files": ["app/rendering/html_renderer.py"],
+  "global_state_absent_files": ["app/state/constants.py"]
+}

@@ -1,0 +1,253 @@
+{
+  "findings": [
+    {
+      "rule_id": "RULE_D",
+      "rule_name": "疑似可变全局状态",
+      "severity": "high",
+      "files": [
+        "app/state/cache.py"
+      ],
+      "evidence": [
+        "CACHE (mutable_literal，第 1 行，变更次数=1)"
+      ],
+      "explanation": "模块级可变对象在函数作用域中被修改，说明共享状态正在跨函数传播，副作用会更难追踪。",
+      "suggestion": "建议把共享状态封装到显式对象、工厂或依赖注入边界中，让写入路径更清晰、更易测试。",
+      "confirmation_status": "confirmed",
+      "confidence": "high",
+      "validation_reason": "模块级可变对象在函数作用域内被修改，共享状态风险较高。",
+      "file_snippets": [
+        {
+          "file": "app/state/cache.py",
+          "module": "app.state.cache",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 4,
+              "snippet": "1: CACHE = {}\n2: \n3: \n4: def remember(key, value):"
+            }
+          ]
+        }
+      ],
+      "validation_source": "deterministic_fallback",
+      "validation_model": null,
+      "needs_human_review": false
+    },
+    {
+      "rule_id": "RULE_A",
+      "rule_name": "Handler/Controller 直接访问数据库",
+      "severity": "medium",
+      "files": [
+        "app/routes/user_handler.py"
+      ],
+      "evidence": [
+        "select（第 5 行，置信度=中）",
+        "session.execute（第 5 行，置信度=中）"
+      ],
+      "explanation": "请求层文件中直接出现数据库或 ORM 操作，通常说明业务边界和数据访问边界没有被清晰隔离。",
+      "suggestion": "建议把数据库访问下沉到显式的 service 或 repository 层，让 handler/controller 只负责请求编排。",
+      "confirmation_status": "confirmed",
+      "confidence": "medium",
+      "validation_reason": "路径命中请求层关键词，且存在数据库访问操作证据。",
+      "file_snippets": [
+        {
+          "file": "app/routes/user_handler.py",
+          "module": "app.routes.user_handler",
+          "blocks": [
+            {
+              "start_line": 2,
+              "end_line": 5,
+              "snippet": "2: \n3: \n4: def list_users(session):\n5:     return session.execute(select(\"users\"))"
+            }
+          ]
+        }
+      ],
+      "validation_source": "deterministic_fallback",
+      "validation_model": null,
+      "needs_human_review": false
+    },
+    {
+      "rule_id": "RULE_B",
+      "rule_name": "同一环境变量在多个文件中被直接读取",
+      "severity": "medium",
+      "files": [
+        "app/services/service_a.py",
+        "app/services/service_b.py"
+      ],
+      "evidence": [
+        "SHARED_FLAG 在 2 个业务文件中被直接读取",
+        "已忽略 1 个配置或测试文件中的读取"
+      ],
+      "explanation": "同一个环境变量在多个业务文件中被直接读取，会让配置入口分散，增加修改和排查时的耦合成本。",
+      "suggestion": "建议把环境变量读取集中到专门的配置模块，再把配置对象传入业务代码。",
+      "confirmation_status": "confirmed",
+      "confidence": "medium",
+      "validation_reason": "同一环境变量在多个业务文件中被直接读取，具备稳定配置分散信号。",
+      "file_snippets": [
+        {
+          "file": "app/services/service_a.py",
+          "module": "app.services.service_a",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: import os\n2: \n3: \n4: def read_flag():\n5:     return os.getenv(\"SHARED_FLAG\")"
+            }
+          ]
+        },
+        {
+          "file": "app/services/service_b.py",
+          "module": "app.services.service_b",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: import os\n2: \n3: \n4: def read_flag():\n5:     return os.environ.get(\"SHARED_FLAG\")"
+            }
+          ]
+        }
+      ],
+      "validation_source": "deterministic_fallback",
+      "validation_model": null,
+      "needs_human_review": false
+    },
+    {
+      "rule_id": "RULE_C",
+      "rule_name": "共享 Utils 模块被过度依赖",
+      "severity": "medium",
+      "files": [
+        "app/feature_a/consumer.py",
+        "app/feature_b/consumer.py",
+        "app/feature_c/consumer.py",
+        "app/feature_d/consumer.py",
+        "app/feature_e/consumer.py"
+      ],
+      "evidence": [
+        "app.common.helpers 被 5 个文件依赖，覆盖 5 个包"
+      ],
+      "explanation": "共享 utils/common/helper 模块被多个包横向依赖，通常意味着跨领域的隐式耦合正在累积。",
+      "suggestion": "建议按领域边界拆分共享工具模块，把真正通用的能力和领域能力分开。",
+      "confirmation_status": "confirmed",
+      "confidence": "medium",
+      "validation_reason": "共享工具模块的依赖范围跨越多个文件或包，存在横向耦合迹象。",
+      "file_snippets": [
+        {
+          "file": "app/feature_a/consumer.py",
+          "module": "app.feature_a.consumer",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: from app.common.helpers import normalize\n2: \n3: \n4: def run(value: str) -> str:\n5:     return normalize(value)"
+            }
+          ]
+        },
+        {
+          "file": "app/feature_b/consumer.py",
+          "module": "app.feature_b.consumer",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: from app.common.helpers import normalize\n2: \n3: \n4: def run(value: str) -> str:\n5:     return normalize(value)"
+            }
+          ]
+        },
+        {
+          "file": "app/feature_c/consumer.py",
+          "module": "app.feature_c.consumer",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: from app.common.helpers import normalize\n2: \n3: \n4: def run(value: str) -> str:\n5:     return normalize(value)"
+            }
+          ]
+        },
+        {
+          "file": "app/feature_d/consumer.py",
+          "module": "app.feature_d.consumer",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: from app.common.helpers import normalize\n2: \n3: \n4: def run(value: str) -> str:\n5:     return normalize(value)"
+            }
+          ]
+        },
+        {
+          "file": "app/feature_e/consumer.py",
+          "module": "app.feature_e.consumer",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: from app.common.helpers import normalize\n2: \n3: \n4: def run(value: str) -> str:\n5:     return normalize(value)"
+            }
+          ]
+        }
+      ],
+      "validation_source": "deterministic_fallback",
+      "validation_model": null,
+      "needs_human_review": false
+    },
+    {
+      "rule_id": "RULE_E",
+      "rule_name": "检测到简单循环 Import",
+      "severity": "medium",
+      "files": [
+        "app/cycle_a.py",
+        "app/cycle_b.py"
+      ],
+      "evidence": [
+        "app/cycle_a.py -> app/cycle_b.py"
+      ],
+      "explanation": "发现了强连通的 import 组件。循环依赖通常会增加初始化脆弱性，并让模块边界更难维护。",
+      "suggestion": "建议提取稳定的共享接口或中间边界模块，把双向依赖重新拆回单向依赖。",
+      "confirmation_status": "confirmed",
+      "confidence": "medium",
+      "validation_reason": "Import 图中存在强连通组件，循环依赖证据明确。",
+      "file_snippets": [
+        {
+          "file": "app/cycle_a.py",
+          "module": "app.cycle_a",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: import app.cycle_b\n2: \n3: \n4: def run():\n5:     return app.cycle_b.run()"
+            }
+          ]
+        },
+        {
+          "file": "app/cycle_b.py",
+          "module": "app.cycle_b",
+          "blocks": [
+            {
+              "start_line": 1,
+              "end_line": 5,
+              "snippet": "1: import app.cycle_a\n2: \n3: \n4: def run():\n5:     return \"cycle\""
+            }
+          ]
+        }
+      ],
+      "validation_source": "deterministic_fallback",
+      "validation_model": null,
+      "needs_human_review": false
+    }
+  ],
+  "summary": {
+    "raw_finding_count": 5,
+    "validated_finding_count": 5,
+    "actionable_finding_count": 5,
+    "confirmed": 5,
+    "needs_review": 0,
+    "rejected": 0,
+    "high_confidence": 1,
+    "medium_confidence": 4,
+    "low_confidence": 0
+  },
+  "generation": {
+    "mode": "deterministic_fallback",
+    "source": "validator_fallback"
+  }
+}

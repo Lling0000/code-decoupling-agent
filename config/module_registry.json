@@ -1,0 +1,601 @@
+{
+  "version": 1,
+  "description": "模块注册表，定义当前仓库中的能力单元、输入输出、依赖和测试入口。",
+  "modules": [
+    {
+      "module_id": "repo_context",
+      "module_type": "context_builder",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/__init__.py",
+        "models/schema.py"
+      ],
+      "responsibility": "构建 RepoContext，收集 Python 文件、模块索引和解析错误。",
+      "inputs": [
+        "仓库根目录路径"
+      ],
+      "outputs": [
+        "RepoContext"
+      ],
+      "dependencies": [],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_goldens.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "import_scanner",
+      "module_type": "scanner",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/imports.py"
+      ],
+      "responsibility": "扫描 import 关系，建立本地依赖边和循环依赖输入。",
+      "inputs": [
+        "RepoContext"
+      ],
+      "outputs": [
+        "artifacts/import_graph.json"
+      ],
+      "dependencies": [
+        "repo_context"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_goldens.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "definitions_scanner",
+      "module_type": "scanner",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/definitions.py"
+      ],
+      "responsibility": "扫描类、函数和方法定义。",
+      "inputs": [
+        "RepoContext"
+      ],
+      "outputs": [
+        "artifacts/definitions.json"
+      ],
+      "dependencies": [
+        "repo_context"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_reporting.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "call_scanner",
+      "module_type": "scanner",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/calls.py"
+      ],
+      "responsibility": "提取近似调用边，生成 call graph。",
+      "inputs": [
+        "RepoContext"
+      ],
+      "outputs": [
+        "artifacts/call_graph.json"
+      ],
+      "dependencies": [
+        "repo_context"
+      ],
+      "test_entrypoints": [
+        "tests/test_reporting.py",
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "env_scanner",
+      "module_type": "scanner",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/envs.py"
+      ],
+      "responsibility": "识别常见环境变量读取模式。",
+      "inputs": [
+        "RepoContext"
+      ],
+      "outputs": [
+        "artifacts/env_usage.json"
+      ],
+      "dependencies": [
+        "repo_context"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_goldens.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "db_usage_scanner",
+      "module_type": "scanner",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/db_usage.py"
+      ],
+      "responsibility": "识别数据库和 ORM 使用信号，并尽量做来源证明。",
+      "inputs": [
+        "RepoContext"
+      ],
+      "outputs": [
+        "artifacts/db_usage.json"
+      ],
+      "dependencies": [
+        "repo_context"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_goldens.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "utils_usage_scanner",
+      "module_type": "scanner",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/utils_usage.py"
+      ],
+      "responsibility": "统计本地 utils/common/helper 模块的依赖范围。",
+      "inputs": [
+        "artifacts/import_graph.json"
+      ],
+      "outputs": [
+        "artifacts/utils_usage.json"
+      ],
+      "dependencies": [
+        "import_scanner"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_goldens.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "global_state_scanner",
+      "module_type": "scanner",
+      "status": "implemented",
+      "implementation_paths": [
+        "scanner/globals.py"
+      ],
+      "responsibility": "识别模块级可变状态及其函数内变更证据。",
+      "inputs": [
+        "RepoContext"
+      ],
+      "outputs": [
+        "artifacts/global_state.json"
+      ],
+      "dependencies": [
+        "repo_context"
+      ],
+      "test_entrypoints": [
+        "tests/test_goldens.py",
+        "tests/test_validator_agent.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "rule_engine",
+      "module_type": "rules_engine",
+      "status": "implemented",
+      "implementation_paths": [
+        "rules_engine/engine.py",
+        "rules/config.py"
+      ],
+      "responsibility": "基于扫描 artifacts 生成原始 findings 并检测循环 import。",
+      "inputs": [
+        "artifacts/import_graph.json",
+        "artifacts/env_usage.json",
+        "artifacts/db_usage.json",
+        "artifacts/utils_usage.json",
+        "artifacts/global_state.json"
+      ],
+      "outputs": [
+        "artifacts/findings.json"
+      ],
+      "dependencies": [
+        "import_scanner",
+        "env_scanner",
+        "db_usage_scanner",
+        "utils_usage_scanner",
+        "global_state_scanner"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_goldens.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "tool_runner",
+      "module_type": "orchestrator",
+      "status": "implemented",
+      "implementation_paths": [
+        "agents/tool_runner.py"
+      ],
+      "responsibility": "运行确定性扫描器和规则引擎，产出基础 artifacts。",
+      "inputs": [
+        "RepoContext"
+      ],
+      "outputs": [
+        "基础扫描 artifacts",
+        "artifacts/findings.json"
+      ],
+      "dependencies": [
+        "repo_context",
+        "import_scanner",
+        "definitions_scanner",
+        "call_scanner",
+        "env_scanner",
+        "db_usage_scanner",
+        "utils_usage_scanner",
+        "global_state_scanner",
+        "rule_engine"
+      ],
+      "test_entrypoints": [
+        "tests/test_goldens.py",
+        "tests/test_reporting.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "scanner_agent",
+      "module_type": "agent_support",
+      "status": "implemented",
+      "implementation_paths": [
+        "agents/scanner_agent.py"
+      ],
+      "responsibility": "把原始扫描结果整理成热点导向的仓库 inventory。",
+      "inputs": [
+        "RepoContext",
+        "基础扫描 artifacts"
+      ],
+      "outputs": [
+        "artifacts/repo_inventory.json"
+      ],
+      "dependencies": [
+        "tool_runner"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_reporting.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "validator_agent",
+      "module_type": "agent",
+      "status": "implemented",
+      "implementation_paths": [
+        "agents/validator_agent.py"
+      ],
+      "responsibility": "复核原始 findings，给出确认状态、置信度和代码片段证据。",
+      "inputs": [
+        "artifacts/findings.json",
+        "RepoContext",
+        "model_routing"
+      ],
+      "outputs": [
+        "artifacts/validated_findings.json"
+      ],
+      "dependencies": [
+        "tool_runner",
+        "model_routing"
+      ],
+      "test_entrypoints": [
+        "tests/test_validator_agent.py",
+        "tests/test_reporting.py",
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "planner_agent",
+      "module_type": "agent",
+      "status": "implemented",
+      "implementation_paths": [
+        "agents/planner_agent.py"
+      ],
+      "responsibility": "基于 actionable findings 生成 triage 和受控 action plan。",
+      "inputs": [
+        "artifacts/validated_findings.json",
+        "artifacts/repo_inventory.json",
+        "model_routing"
+      ],
+      "outputs": [
+        "artifacts/triage.json",
+        "artifacts/action_plan.json",
+        "artifacts/planner_agent.json"
+      ],
+      "dependencies": [
+        "validator_agent",
+        "scanner_agent",
+        "model_routing"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_reporting.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "critic_agent",
+      "module_type": "agent",
+      "status": "implemented",
+      "implementation_paths": [
+        "agents/critic_agent.py"
+      ],
+      "responsibility": "审查 action plan，结合策略结果给出风险判断与 required checks。",
+      "inputs": [
+        "artifacts/action_plan.json",
+        "artifacts/repo_inventory.json",
+        "model_routing"
+      ],
+      "outputs": [
+        "artifacts/critic_review.json",
+        "artifacts/critic_agent.json"
+      ],
+      "dependencies": [
+        "planner_agent",
+        "policy_engine",
+        "model_routing"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py",
+        "tests/test_reporting.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "policy_engine",
+      "module_type": "guardrail",
+      "status": "implemented",
+      "implementation_paths": [
+        "policy/engine.py"
+      ],
+      "responsibility": "对计划范围和受保护路径做确定性门禁检查。",
+      "inputs": [
+        "artifacts/action_plan.json"
+      ],
+      "outputs": [
+        "policy evaluation result"
+      ],
+      "dependencies": [],
+      "test_entrypoints": [
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "governor",
+      "module_type": "orchestrator",
+      "status": "implemented",
+      "implementation_paths": [
+        "agents/governor.py"
+      ],
+      "responsibility": "串联扫描、复核、规划、审查的主编排流程。",
+      "inputs": [
+        "仓库根目录路径"
+      ],
+      "outputs": [
+        "完整 run_result"
+      ],
+      "dependencies": [
+        "repo_context",
+        "tool_runner",
+        "scanner_agent",
+        "validator_agent",
+        "planner_agent",
+        "critic_agent",
+        "model_routing"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "model_routing",
+      "module_type": "llm_support",
+      "status": "implemented",
+      "implementation_paths": [
+        "llm/catalog.py",
+        "config/agent_models.json"
+      ],
+      "responsibility": "解析 provider 与 agent 模型路由配置，支持环境变量覆盖。",
+      "inputs": [
+        "config/agent_models.json",
+        "环境变量"
+      ],
+      "outputs": [
+        "artifacts/model_routing.json"
+      ],
+      "dependencies": [],
+      "test_entrypoints": [
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "llm_health",
+      "module_type": "llm_support",
+      "status": "implemented",
+      "implementation_paths": [
+        "llm/health.py",
+        "llm/client.py",
+        "llm/env.py"
+      ],
+      "responsibility": "检查 LLM provider 配置、live 开关和模型探活状态。",
+      "inputs": [
+        "model_routing",
+        "环境变量"
+      ],
+      "outputs": [
+        "artifacts/llm_health_check.json"
+      ],
+      "dependencies": [
+        "model_routing"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "report_renderer",
+      "module_type": "reporting",
+      "status": "implemented",
+      "implementation_paths": [
+        "report/renderer.py"
+      ],
+      "responsibility": "生成给人看的中文 summary.md 报告。",
+      "inputs": [
+        "基础扫描 artifacts",
+        "validated_findings",
+        "repo_inventory",
+        "triage",
+        "action_plan",
+        "critic_review",
+        "model_routing"
+      ],
+      "outputs": [
+        "summary.md"
+      ],
+      "dependencies": [
+        "tool_runner",
+        "validator_agent",
+        "scanner_agent",
+        "planner_agent",
+        "critic_agent",
+        "model_routing"
+      ],
+      "test_entrypoints": [
+        "tests/test_reporting.py",
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "module_report_agent",
+      "module_type": "agent_support",
+      "status": "implemented",
+      "implementation_paths": [
+        "agents/module_report_agent.py"
+      ],
+      "responsibility": "生成全仓模块画像、P0/P1/P2 优先级排序，并为重点模块产出模块诊断卡。",
+      "inputs": [
+        "RepoContext",
+        "基础扫描 artifacts",
+        "artifacts/validated_findings.json"
+      ],
+      "outputs": [
+        "artifacts/module_inventory.json",
+        "artifacts/module_priorities.json",
+        "artifacts/module_deep_reviews.json",
+        "module_reports/lightweight/*.md",
+        "module_reports/heavyweight/*.md"
+      ],
+      "dependencies": [
+        "tool_runner",
+        "validator_agent"
+      ],
+      "test_entrypoints": [
+        "tests/test_module_reports.py",
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "gate_runner",
+      "module_type": "guardrail",
+      "status": "implemented",
+      "implementation_paths": [
+        "iteration/gate_runner.py",
+        "config/gate_spec.json"
+      ],
+      "responsibility": "执行测试门禁、策略门禁和运行门禁，产出 agent/human 双门禁报告。",
+      "inputs": [
+        "仓库路径",
+        "输出目录",
+        "artifacts/action_plan.json",
+        "artifacts/critic_review.json",
+        "config/gate_spec.json"
+      ],
+      "outputs": [
+        "artifacts/iteration_agent_report.json",
+        "iteration_human_report.md"
+      ],
+      "dependencies": [
+        "policy_engine"
+      ],
+      "test_entrypoints": [
+        "tests/test_gate_runner.py",
+        "tests/test_design_specs.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    },
+    {
+      "module_id": "cli_entrypoint",
+      "module_type": "entrypoint",
+      "status": "implemented",
+      "implementation_paths": [
+        "main.py"
+      ],
+      "responsibility": "提供 CLI 入口，写出所有 artifacts 和 summary，并支持 LLM 自检。",
+      "inputs": [
+        "--repo",
+        "--output",
+        "--check-llm-config"
+      ],
+      "outputs": [
+        "summary.md",
+        "artifacts/*.json",
+        "iteration_human_report.md"
+      ],
+      "dependencies": [
+        "governor",
+        "report_renderer",
+        "module_report_agent",
+        "llm_health",
+        "gate_runner"
+      ],
+      "test_entrypoints": [
+        "tests/test_smoke.py"
+      ],
+      "readme_required": true,
+      "readme_template_path": "templates/module_README.md"
+    }
+  ]
+}

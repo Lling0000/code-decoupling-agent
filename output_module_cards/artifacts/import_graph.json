@@ -1,0 +1,383 @@
+{
+  "files": [
+    {
+      "file": "app/__init__.py",
+      "module": "app",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/common/__init__.py",
+      "module": "app.common",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/common/helpers.py",
+      "module": "app.common.helpers",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/config/__init__.py",
+      "module": "app.config",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/config/settings.py",
+      "module": "app.config.settings",
+      "imports": [
+        {
+          "kind": "import",
+          "module": "os",
+          "names": [
+            "os"
+          ],
+          "line": 1,
+          "is_local": false,
+          "resolved_local_modules": [],
+          "resolved_local_files": []
+        }
+      ],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/cycle_a.py",
+      "module": "app.cycle_a",
+      "imports": [
+        {
+          "kind": "import",
+          "module": "app.cycle_b",
+          "names": [
+            "app.cycle_b"
+          ],
+          "line": 1,
+          "is_local": true,
+          "resolved_local_modules": [
+            "app.cycle_b"
+          ],
+          "resolved_local_files": [
+            "app/cycle_b.py"
+          ]
+        }
+      ],
+      "local_dependencies": [
+        "app/cycle_b.py"
+      ]
+    },
+    {
+      "file": "app/cycle_b.py",
+      "module": "app.cycle_b",
+      "imports": [
+        {
+          "kind": "import",
+          "module": "app.cycle_a",
+          "names": [
+            "app.cycle_a"
+          ],
+          "line": 1,
+          "is_local": true,
+          "resolved_local_modules": [
+            "app.cycle_a"
+          ],
+          "resolved_local_files": [
+            "app/cycle_a.py"
+          ]
+        }
+      ],
+      "local_dependencies": [
+        "app/cycle_a.py"
+      ]
+    },
+    {
+      "file": "app/feature_a/__init__.py",
+      "module": "app.feature_a",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/feature_a/consumer.py",
+      "module": "app.feature_a.consumer",
+      "imports": [
+        {
+          "kind": "from_import",
+          "module": "app.common.helpers",
+          "names": [
+            "normalize"
+          ],
+          "line": 1,
+          "is_local": true,
+          "resolved_local_modules": [
+            "app.common.helpers"
+          ],
+          "resolved_local_files": [
+            "app/common/helpers.py"
+          ]
+        }
+      ],
+      "local_dependencies": [
+        "app/common/helpers.py"
+      ]
+    },
+    {
+      "file": "app/feature_b/__init__.py",
+      "module": "app.feature_b",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/feature_b/consumer.py",
+      "module": "app.feature_b.consumer",
+      "imports": [
+        {
+          "kind": "from_import",
+          "module": "app.common.helpers",
+          "names": [
+            "normalize"
+          ],
+          "line": 1,
+          "is_local": true,
+          "resolved_local_modules": [
+            "app.common.helpers"
+          ],
+          "resolved_local_files": [
+            "app/common/helpers.py"
+          ]
+        }
+      ],
+      "local_dependencies": [
+        "app/common/helpers.py"
+      ]
+    },
+    {
+      "file": "app/feature_c/__init__.py",
+      "module": "app.feature_c",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/feature_c/consumer.py",
+      "module": "app.feature_c.consumer",
+      "imports": [
+        {
+          "kind": "from_import",
+          "module": "app.common.helpers",
+          "names": [
+            "normalize"
+          ],
+          "line": 1,
+          "is_local": true,
+          "resolved_local_modules": [
+            "app.common.helpers"
+          ],
+          "resolved_local_files": [
+            "app/common/helpers.py"
+          ]
+        }
+      ],
+      "local_dependencies": [
+        "app/common/helpers.py"
+      ]
+    },
+    {
+      "file": "app/feature_d/__init__.py",
+      "module": "app.feature_d",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/feature_d/consumer.py",
+      "module": "app.feature_d.consumer",
+      "imports": [
+        {
+          "kind": "from_import",
+          "module": "app.common.helpers",
+          "names": [
+            "normalize"
+          ],
+          "line": 1,
+          "is_local": true,
+          "resolved_local_modules": [
+            "app.common.helpers"
+          ],
+          "resolved_local_files": [
+            "app/common/helpers.py"
+          ]
+        }
+      ],
+      "local_dependencies": [
+        "app/common/helpers.py"
+      ]
+    },
+    {
+      "file": "app/feature_e/__init__.py",
+      "module": "app.feature_e",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/feature_e/consumer.py",
+      "module": "app.feature_e.consumer",
+      "imports": [
+        {
+          "kind": "from_import",
+          "module": "app.common.helpers",
+          "names": [
+            "normalize"
+          ],
+          "line": 1,
+          "is_local": true,
+          "resolved_local_modules": [
+            "app.common.helpers"
+          ],
+          "resolved_local_files": [
+            "app/common/helpers.py"
+          ]
+        }
+      ],
+      "local_dependencies": [
+        "app/common/helpers.py"
+      ]
+    },
+    {
+      "file": "app/rendering/__init__.py",
+      "module": "app.rendering",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/rendering/html_renderer.py",
+      "module": "app.rendering.html_renderer",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/routes/__init__.py",
+      "module": "app.routes",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/routes/user_handler.py",
+      "module": "app.routes.user_handler",
+      "imports": [
+        {
+          "kind": "from_import",
+          "module": "sqlalchemy",
+          "names": [
+            "select"
+          ],
+          "line": 1,
+          "is_local": false,
+          "resolved_local_modules": [],
+          "resolved_local_files": []
+        }
+      ],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/services/__init__.py",
+      "module": "app.services",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/services/service_a.py",
+      "module": "app.services.service_a",
+      "imports": [
+        {
+          "kind": "import",
+          "module": "os",
+          "names": [
+            "os"
+          ],
+          "line": 1,
+          "is_local": false,
+          "resolved_local_modules": [],
+          "resolved_local_files": []
+        }
+      ],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/services/service_b.py",
+      "module": "app.services.service_b",
+      "imports": [
+        {
+          "kind": "import",
+          "module": "os",
+          "names": [
+            "os"
+          ],
+          "line": 1,
+          "is_local": false,
+          "resolved_local_modules": [],
+          "resolved_local_files": []
+        }
+      ],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/state/__init__.py",
+      "module": "app.state",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/state/cache.py",
+      "module": "app.state.cache",
+      "imports": [],
+      "local_dependencies": []
+    },
+    {
+      "file": "app/state/constants.py",
+      "module": "app.state.constants",
+      "imports": [],
+      "local_dependencies": []
+    }
+  ],
+  "local_edges": [
+    {
+      "source": "app/cycle_a.py",
+      "target": "app/cycle_b.py",
+      "module": "app.cycle_b"
+    },
+    {
+      "source": "app/cycle_b.py",
+      "target": "app/cycle_a.py",
+      "module": "app.cycle_a"
+    },
+    {
+      "source": "app/feature_a/consumer.py",
+      "target": "app/common/helpers.py",
+      "module": "app.common.helpers"
+    },
+    {
+      "source": "app/feature_b/consumer.py",
+      "target": "app/common/helpers.py",
+      "module": "app.common.helpers"
+    },
+    {
+      "source": "app/feature_c/consumer.py",
+      "target": "app/common/helpers.py",
+      "module": "app.common.helpers"
+    },
+    {
+      "source": "app/feature_d/consumer.py",
+      "target": "app/common/helpers.py",
+      "module": "app.common.helpers"
+    },
+    {
+      "source": "app/feature_e/consumer.py",
+      "target": "app/common/helpers.py",
+      "module": "app.common.helpers"
+    }
+  ],
+  "cycles": [
+    [
+      "app/cycle_a.py",
+      "app/cycle_b.py"
+    ]
+  ]
+}

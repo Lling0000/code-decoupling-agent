@@ -1,0 +1,21 @@
+{
+  "provider": {
+    "provider_id": "bailian",
+    "display_name": "Alibaba Cloud Bailian / DashScope Compatible API",
+    "api_key_env": "DASHSCOPE_API_KEY",
+    "base_url_env": "DASHSCOPE_BASE_URL",
+    "base_url_env_aliases": [
+      "BAILIAN_BASE_URL"
+    ],
+    "default_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  },
+  "models": {
+    "planner": "deepseek-v3.2",
+    "validator": "deepseek-v3.2",
+    "critic": "deepseek-v3.2",
+    "coder": "qwen3-coder-flash",
+    "summary": "qwen3.5-flash",
+    "embedding": "text-embedding-v4",
+    "rerank": "qwen3-rerank"
+  }
+}
