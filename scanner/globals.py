@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import ast
 
+from common.log import get_logger
 from models.schema import RepoContext
-from rules.config import GLOBAL_STATE_IGNORED_NAMES, GLOBAL_STATE_MUTATION_METHODS
+from rules.config import GLOBAL_STATE_IGNORED_NAMES, GLOBAL_STATE_MUTATION_METHODS, GLOBAL_STATE_SAFE_METHODS
 from scanner.calls import extract_call_name
+
+log = get_logger("decoupling.scanner.globals")
 
 
 def scan_global_state(context: RepoContext) -> dict[str, object]:
@@ -62,6 +65,7 @@ def scan_global_state(context: RepoContext) -> dict[str, object]:
             }
         )
 
+    log.info("globals scan: %d files with risk, %d total risks", files_with_risk, risk_count)
     return {
         "files": sorted(files_artifact, key=lambda item: item["file"]),
         "files_with_risk": files_with_risk,
@@ -152,7 +156,7 @@ def _collect_function_interactions(tree: ast.AST, candidate_names: set[str]) -> 
                 call_name = extract_call_name(child.func)
                 root_name = _root_name(call_name)
                 method_name = _last_segment(call_name)
-                if root_name in candidate_names and method_name in GLOBAL_STATE_MUTATION_METHODS:
+                if root_name in candidate_names and method_name in GLOBAL_STATE_MUTATION_METHODS and method_name not in GLOBAL_STATE_SAFE_METHODS:
                     interactions[root_name]["mutation_lines"].add(child.lineno)
             elif isinstance(child, ast.Assign):
                 _record_target_mutations(child.targets, candidate_names, declared_global, child.lineno, interactions)

@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import json
 import subprocess
 from collections import Counter
 from pathlib import Path
 
+from common.helpers import find_assignment, is_test_file, non_empty_text, string_list
+from common.log import get_logger
 from llm.client import build_bailian_client, provider_request_error
 from models.schema import RepoContext
+
+log = get_logger("decoupling.module_report")
+GIT_SUBPROCESS_TIMEOUT = 30
+PRIORITY_WEIGHTS_PATH = Path(__file__).resolve().parents[1] / "config" / "priority_weights.json"
 
 GIT_HOTNESS_COMMIT_LIMIT = 200
 MAX_DETAILED_MODULE_REPORTS = 5
@@ -69,11 +76,11 @@ def build_module_inventory(
         module_entry["metrics"]["env_read_count"] += env_counts.get(parsed.relative_path, 0)
         module_entry["metrics"]["db_signal_count"] += db_counts.get(parsed.relative_path, 0)
         module_entry["metrics"]["global_risk_count"] += global_counts.get(parsed.relative_path, 0)
-        if _is_test_file(parsed.relative_path):
+        if is_test_file(parsed.relative_path):
             module_entry["metrics"]["test_file_count"] += 1
 
     for parsed in context.files:
-        if not _is_test_file(parsed.relative_path):
+        if not is_test_file(parsed.relative_path):
             continue
         for module_name, module_entry in modules.items():
             if _looks_like_matching_test(module_name, parsed.relative_path):
@@ -186,9 +193,9 @@ def build_module_deep_reviews(
 ) -> dict[str, object]:
     modules = _detailed_modules(module_inventory)
     client = build_bailian_client()
-    validator_assignment = _find_assignment(model_routing, "finding_validation")
-    planner_assignment = _find_assignment(model_routing, "planner_triage_review")
-    critic_assignment = _find_assignment(model_routing, "critic_review")
+    validator_assignment = find_assignment(model_routing, "finding_validation")
+    planner_assignment = find_assignment(model_routing, "planner_triage_review")
+    critic_assignment = find_assignment(model_routing, "critic_review")
 
     reviewed_modules: list[dict[str, object]] = []
     llm_reviewed = 0
@@ -213,7 +220,7 @@ def build_module_deep_reviews(
                 temperature=0,
                 max_tokens=900,
             )
-            validator_review = _sanitize_validator_review(response["json"], validator_review)
+            validator_review = _sanitize_module_validator_review(response["json"], validator_review)
             llm_successes += 1
         except Exception as exc:
             errors.append(provider_request_error(exc))
@@ -226,7 +233,7 @@ def build_module_deep_reviews(
                 temperature=0.1,
                 max_tokens=1100,
             )
-            planner_review = _sanitize_planner_review(response["json"], planner_review)
+            planner_review = _sanitize_module_planner_review(response["json"], planner_review)
             llm_successes += 1
         except Exception as exc:
             errors.append(provider_request_error(exc))
@@ -239,7 +246,7 @@ def build_module_deep_reviews(
                 temperature=0.1,
                 max_tokens=900,
             )
-            critic_review = _sanitize_critic_review(response["json"], critic_review)
+            critic_review = _sanitize_module_critic_review(response["json"], critic_review)
             llm_successes += 1
         except Exception as exc:
             errors.append(provider_request_error(exc))
@@ -613,7 +620,7 @@ def _module_critic_prompt() -> str:
     )
 
 
-def _sanitize_validator_review(
+def _sanitize_module_validator_review(
     llm_output: dict[str, object],
     fallback: dict[str, object],
 ) -> dict[str, object]:
@@ -624,12 +631,12 @@ def _sanitize_validator_review(
     return {
         "confirmation_status": status if status in VALIDATOR_STATUSES else fallback["confirmation_status"],
         "confidence": confidence if confidence in CONFIDENCE_LEVELS else fallback["confidence"],
-        "summary": _non_empty_text(summary, fallback["summary"]),
-        "key_evidence": _string_list(key_evidence, fallback["key_evidence"]),
+        "summary": non_empty_text(summary, fallback["summary"]),
+        "key_evidence": string_list(key_evidence, fallback["key_evidence"]),
     }
 
 
-def _sanitize_planner_review(
+def _sanitize_module_planner_review(
     llm_output: dict[str, object],
     fallback: dict[str, object],
 ) -> dict[str, object]:
@@ -638,16 +645,16 @@ def _sanitize_planner_review(
     return {
         "recommend_change": recommend_change if recommend_change in {"yes", "defer"} else fallback["recommend_change"],
         "priority": priority if priority in PLANNER_PRIORITIES else fallback["priority"],
-        "actions": _string_list(llm_output.get("actions"), fallback["actions"]),
-        "test_recommendations": _string_list(
+        "actions": string_list(llm_output.get("actions"), fallback["actions"]),
+        "test_recommendations": string_list(
             llm_output.get("test_recommendations"),
             fallback["test_recommendations"],
         ),
-        "summary": _non_empty_text(llm_output.get("summary"), fallback["summary"]),
+        "summary": non_empty_text(llm_output.get("summary"), fallback["summary"]),
     }
 
 
-def _sanitize_critic_review(
+def _sanitize_module_critic_review(
     llm_output: dict[str, object],
     fallback: dict[str, object],
 ) -> dict[str, object]:
@@ -656,8 +663,8 @@ def _sanitize_critic_review(
     return {
         "review_status": review_status if review_status in CRITIC_STATUSES else fallback["review_status"],
         "risk_level": risk_level if risk_level in RISK_LEVELS else fallback["risk_level"],
-        "concerns": _string_list(llm_output.get("concerns"), fallback["concerns"]),
-        "summary": _non_empty_text(llm_output.get("summary"), fallback["summary"]),
+        "concerns": string_list(llm_output.get("concerns"), fallback["concerns"]),
+        "summary": non_empty_text(llm_output.get("summary"), fallback["summary"]),
     }
 
 
@@ -676,20 +683,49 @@ def _test_recommendations(module_entry: dict[str, object]) -> list[str]:
 
 
 def _priority_score(metrics: Counter) -> int:
+    w = _load_priority_weights()
     return (
-        metrics["file_count"]
-        + metrics["import_count"]
-        + metrics["definition_count"]
-        + (metrics["upstream_count"] * 2)
-        + metrics["downstream_count"]
-        + (metrics["cross_layer_dependency_count"] * 2)
-        + (metrics["db_signal_count"] * 3)
-        + (metrics["global_risk_count"] * 3)
-        + metrics["env_read_count"]
-        + min(metrics["git_change_count_last_200_commits"], 10)
-        + (4 if metrics["matching_test_file_count"] == 0 else 0)
-        + (metrics["finding_count"] * 2)
+        metrics["file_count"] * w["file_count"]
+        + metrics["import_count"] * w["import_count"]
+        + metrics["definition_count"] * w["definition_count"]
+        + metrics["upstream_count"] * w["upstream_count"]
+        + metrics["downstream_count"] * w["downstream_count"]
+        + metrics["cross_layer_dependency_count"] * w["cross_layer_dependency_count"]
+        + metrics["db_signal_count"] * w["db_signal_count"]
+        + metrics["global_risk_count"] * w["global_risk_count"]
+        + metrics["env_read_count"] * w["env_read_count"]
+        + min(metrics["git_change_count_last_200_commits"], w["git_change_cap"])
+        + (w["no_test_penalty"] if metrics["matching_test_file_count"] == 0 else 0)
+        + metrics["finding_count"] * w["finding_count"]
     )
+
+
+_CACHED_WEIGHTS: dict[str, int] | None = None
+
+
+def _load_priority_weights() -> dict[str, int]:
+    global _CACHED_WEIGHTS
+    if _CACHED_WEIGHTS is not None:
+        return _CACHED_WEIGHTS
+
+    defaults = {
+        "file_count": 1, "import_count": 1, "definition_count": 1,
+        "upstream_count": 2, "downstream_count": 1, "cross_layer_dependency_count": 2,
+        "db_signal_count": 3, "global_risk_count": 3, "env_read_count": 1,
+        "git_change_cap": 10, "no_test_penalty": 4, "finding_count": 2,
+    }
+    if PRIORITY_WEIGHTS_PATH.exists():
+        try:
+            raw = json.loads(PRIORITY_WEIGHTS_PATH.read_text(encoding="utf-8"))
+            loaded = raw.get("weights", {})
+            for key in defaults:
+                if key in loaded and isinstance(loaded[key], (int, float)):
+                    defaults[key] = int(loaded[key])
+        except (OSError, json.JSONDecodeError):
+            log.warning("Failed to load priority weights, using defaults")
+
+    _CACHED_WEIGHTS = defaults
+    return _CACHED_WEIGHTS
 
 
 def _priority_level(
@@ -726,7 +762,7 @@ def _detailed_modules(module_inventory: dict[str, object]) -> list[dict[str, obj
 
 
 def _module_bucket(relative_path: str, package_name: str, module_name: str) -> str:
-    if _is_test_file(relative_path):
+    if is_test_file(relative_path):
         return package_name or module_name
     if package_name:
         return package_name
@@ -737,7 +773,7 @@ def _module_bucket(relative_path: str, package_name: str, module_name: str) -> s
 
 def _classify_layer(module_name: str, relative_path: str) -> str:
     lower = f"{module_name} {relative_path}".lower()
-    if _is_test_file(relative_path):
+    if is_test_file(relative_path):
         return "test"
     if any(keyword in lower for keyword in ("route", "router", "handler", "controller", "view", "api")):
         return "interface"
@@ -825,22 +861,6 @@ def _module_recommendation(module_entry: dict[str, object]) -> dict[str, object]
     }
 
 
-def _find_assignment(model_routing: dict[str, object], role: str) -> dict[str, object] | None:
-    for item in model_routing.get("assignments", []):
-        if item.get("role") == role:
-            return item
-    return None
-
-
-def _string_list(value: object, fallback: list[str]) -> list[str]:
-    if not isinstance(value, list):
-        return fallback
-    items = [item.strip() for item in value if isinstance(item, str) and item.strip()]
-    return items or fallback
-
-
-def _non_empty_text(value: object, fallback: str) -> str:
-    return value.strip() if isinstance(value, str) and value.strip() else fallback
 
 
 def _collect_git_hotness(repo_root: Path) -> dict[str, int]:
@@ -861,8 +881,10 @@ def _collect_git_hotness(repo_root: Path) -> dict[str, int]:
             capture_output=True,
             text=True,
             check=False,
+            timeout=GIT_SUBPROCESS_TIMEOUT,
         )
-    except OSError:
+    except (OSError, subprocess.TimeoutExpired):
+        log.warning("git log command failed or timed out for %s", repo_root)
         return {}
     if completed.returncode != 0:
         return {}
@@ -875,6 +897,3 @@ def _collect_git_hotness(repo_root: Path) -> dict[str, int]:
     return counts
 
 
-def _is_test_file(relative_path: str) -> bool:
-    file_name = relative_path.rsplit("/", 1)[-1]
-    return relative_path.startswith("tests/") or file_name.startswith("test_") or file_name.endswith("_test.py")

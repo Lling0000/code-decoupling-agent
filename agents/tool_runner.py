@@ -28,6 +28,7 @@ def run_deterministic_toolchain(context: RepoContext) -> dict[str, object]:
         utils_usage=utils_usage,
         global_state=global_state,
         cycles=cycles,
+        definitions=definitions,
     )
 
     return {

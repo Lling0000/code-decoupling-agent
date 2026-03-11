@@ -1,0 +1,16 @@
+{
+  "protected_path_keywords": [
+    "auth",
+    "security",
+    "schema",
+    "migration",
+    "migrations",
+    "settings",
+    "secret",
+    "credential",
+    "permission"
+  ],
+  "max_files_per_step": 8,
+  "max_plan_window": 5,
+  "user_protected_paths": []
+}

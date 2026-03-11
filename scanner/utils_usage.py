@@ -58,7 +58,14 @@ def scan_utils_usage(import_graph: dict[str, object]) -> dict[str, object]:
 
 def _matches_utils_name(module_name: str) -> bool:
     parts = [part.lower() for part in module_name.split(".")]
-    return any(part in UTILS_MODULE_KEYWORDS for part in parts)
+    for part in parts:
+        if part in UTILS_MODULE_KEYWORDS:
+            return True
+        # Also match underscore-separated names like "myapp_utils" or "common_tools".
+        segments = part.split("_")
+        if any(seg in UTILS_MODULE_KEYWORDS for seg in segments):
+            return True
+    return False
 
 
 def _consumer_package(module_name: str) -> str:

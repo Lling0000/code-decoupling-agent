@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from common.log import get_logger
+
+log = get_logger("decoupling.governor")
+
 from agents.critic_agent import run_critic_agent
 from agents.module_report_agent import (
     build_module_deep_reviews,
@@ -19,6 +23,7 @@ from scanner import build_repo_context
 
 
 def run_governed_analysis(repo_root: Path) -> dict[str, object]:
+    log.info("Starting governed analysis for %s", repo_root)
     context = build_repo_context(repo_root)
     tool_results = run_deterministic_toolchain(context)
     model_routing = build_model_routing()
@@ -59,6 +64,8 @@ def run_governed_analysis(repo_root: Path) -> dict[str, object]:
         repo_inventory=repo_inventory,
         model_routing=model_routing,
     )
+    log.info("Governed analysis complete: %d files, %d findings",
+             len(context.files), tool_results["findings"]["counts"]["total"])
     return {
         "context": context,
         "artifacts": tool_results,

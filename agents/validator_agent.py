@@ -3,7 +3,11 @@ from __future__ import annotations
 import re
 from collections import Counter
 
+from common.helpers import find_assignment
+from common.log import get_logger
 from llm.client import build_bailian_client, provider_request_error
+
+log = get_logger("decoupling.validator")
 
 CONFIRMATION_STATUS = {"confirmed", "needs_review", "rejected"}
 CONFIDENCE_LEVELS = {"high", "medium", "low"}
@@ -18,12 +22,13 @@ def run_validator_agent(
     context: object,
     model_routing: dict[str, object],
 ) -> dict[str, object]:
-    assignment = _find_assignment(model_routing, "finding_validation")
+    assignment = find_assignment(model_routing, "finding_validation")
     prepared_findings = _prepare_findings(findings_artifact, context)
     deterministic_items = [_deterministic_validation(item) for item in prepared_findings]
 
     client = build_bailian_client()
     if client is None or assignment is None:
+        log.info("Validator running in deterministic fallback mode")
         validated_findings = _build_validated_artifact(
             deterministic_items,
             raw_finding_count=findings_artifact["counts"]["total"],
@@ -337,8 +342,3 @@ def _strip_validation_fields(item: dict[str, object]) -> dict[str, object]:
     return stripped
 
 
-def _find_assignment(model_routing: dict[str, object], role: str) -> dict[str, object] | None:
-    for item in model_routing.get("assignments", []):
-        if item.get("role") == role:
-            return item
-    return None
