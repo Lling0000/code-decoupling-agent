@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 from agents.contracts import CriticReview
+from common.helpers import find_assignment, non_empty_text, string_list
+from common.log import get_logger
 from llm.client import build_bailian_client, provider_request_error
 from models.schema import to_jsonable
 from policy.engine import evaluate_plan
+
+log = get_logger("decoupling.critic")
 
 ALLOWED_STATUS = {"approved", "needs_review", "blocked"}
 ALLOWED_RISK = {"low", "medium", "high"}
@@ -71,9 +75,10 @@ def run_critic_agent(
         "source": "critic_fallback",
     }
 
-    assignment = _find_assignment(model_routing, "critic_review")
+    assignment = find_assignment(model_routing, "critic_review")
     client = build_bailian_client()
     if client is None or assignment is None:
+        log.info("Critic running in deterministic fallback mode")
         return {
             "critic_review": deterministic_review,
             "critic_agent": _critic_runtime(
@@ -139,13 +144,6 @@ def run_critic_agent(
         }
 
 
-def _find_assignment(model_routing: dict[str, object], role: str) -> dict[str, object] | None:
-    for item in model_routing.get("assignments", []):
-        if item.get("role") == role:
-            return item
-    return None
-
-
 def _critic_runtime(
     *,
     assignment: dict[str, object] | None,
@@ -205,12 +203,12 @@ def _sanitize_critic_review(
     if blocked:
         risk_level = "high"
 
-    concerns = _string_list(llm_output.get("concerns"), deterministic_review["concerns"])
+    concerns = string_list(llm_output.get("concerns"), deterministic_review["concerns"])
     required_checks = sorted(
-        set(_string_list(llm_output.get("required_checks"), deterministic_review["required_checks"]))
+        set(string_list(llm_output.get("required_checks"), deterministic_review["required_checks"]))
         | set(deterministic_review["required_checks"])
     )
-    summary = _non_empty_text(llm_output.get("summary"), deterministic_review["summary"])
+    summary = non_empty_text(llm_output.get("summary"), deterministic_review["summary"])
 
     return {
         "status": status,
@@ -223,12 +221,3 @@ def _sanitize_critic_review(
     }
 
 
-def _string_list(value: object, fallback: list[str]) -> list[str]:
-    if not isinstance(value, list):
-        return fallback
-    items = [item.strip() for item in value if isinstance(item, str) and item.strip()]
-    return items or fallback
-
-
-def _non_empty_text(value: object, fallback: str) -> str:
-    return value.strip() if isinstance(value, str) and value.strip() else fallback

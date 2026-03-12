@@ -2,14 +2,20 @@ from __future__ import annotations
 
 import ast
 
+from common.log import get_logger
 from models.schema import RepoContext
 from rules.config import (
+    DB_GENERIC_ROOT_HINTS,
+    DB_HIGH_CONFIDENCE_METHODS,
     DB_IMPORTED_CALL_NAMES,
     DB_IMPORT_KEYWORDS,
+    DB_LOW_CONFIDENCE_METHODS,
     DB_OPERATION_METHODS,
     DB_ROOT_NAME_HINTS,
 )
 from scanner.calls import extract_call_name
+
+log = get_logger("decoupling.scanner.db_usage")
 
 
 def scan_db_usage(context: RepoContext) -> dict[str, object]:
@@ -83,6 +89,7 @@ def scan_db_usage(context: RepoContext) -> dict[str, object]:
             }
         )
 
+    log.info("db_usage scan: %d files with signals, %d total signals", files_with_signals, signal_count)
     return {
         "files": sorted(files_artifact, key=lambda item: item["file"]),
         "files_with_signals": files_with_signals,
@@ -160,12 +167,23 @@ def _classify_db_call(name: str | None, db_context: dict[str, object]) -> str | 
     if root_name in db_context["module_aliases"]:
         if last_segment in DB_IMPORTED_CALL_NAMES:
             return "high"
-        if last_segment in DB_OPERATION_METHODS:
+        if last_segment in DB_HIGH_CONFIDENCE_METHODS:
+            return "high"
+        if last_segment in DB_LOW_CONFIDENCE_METHODS:
             return "medium"
     if root_name in db_context["symbol_aliases"] and last_segment in DB_OPERATION_METHODS:
         return "medium"
-    if db_context["has_db_imports"] and root_name in DB_ROOT_NAME_HINTS and last_segment in DB_OPERATION_METHODS:
-        return "medium"
+    # Tightened: DB_ROOT_NAME_HINTS only get "medium" with high-confidence methods;
+    # low-confidence methods on hints (like client.get()) are NOT flagged.
+    if db_context["has_db_imports"] and root_name in DB_ROOT_NAME_HINTS:
+        if last_segment in DB_HIGH_CONFIDENCE_METHODS:
+            return "medium"
+        if last_segment in DB_LOW_CONFIDENCE_METHODS:
+            return "medium"
+    # Generic roots (e.g. "client") only flagged with high-confidence methods.
+    if db_context["has_db_imports"] and root_name in DB_GENERIC_ROOT_HINTS:
+        if last_segment in DB_HIGH_CONFIDENCE_METHODS:
+            return "medium"
     return None
 
 

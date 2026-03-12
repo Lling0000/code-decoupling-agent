@@ -1,19 +1,33 @@
 from __future__ import annotations
 
 import json
+import time
 import urllib.error
 import urllib.request
 
+from common.log import get_logger
 from llm.env import env_flag, env_value, env_value_with_aliases
 
-DEFAULT_TIMEOUT_SECONDS = 45
+log = get_logger("decoupling.llm.client")
+
+DEFAULT_TIMEOUT_SECONDS = 60
+DEFAULT_MAX_RETRIES = 2
+RETRY_BACKOFF_SECONDS = 1.5
 
 
 class BailianChatClient:
-    def __init__(self, *, base_url: str, api_key: str, timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS) -> None:
+    def __init__(
+        self,
+        *,
+        base_url: str,
+        api_key: str,
+        timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.timeout_seconds = timeout_seconds
+        self.max_retries = max_retries
 
     def chat_json(
         self,
@@ -37,7 +51,7 @@ class BailianChatClient:
             "max_tokens": max_tokens,
             "stream": False,
         }
-        payload = self._post("/chat/completions", body)
+        payload = self._post_with_retry("/chat/completions", body, context=f"chat_json({model})")
         content = _extract_message_content(payload)
         return {
             "raw_text": content,
@@ -63,13 +77,30 @@ class BailianChatClient:
             "max_tokens": 32,
             "stream": False,
         }
-        payload = self._post("/chat/completions", body)
+        payload = self._post_with_retry("/chat/completions", body, context=f"probe({model})")
         content = _extract_message_content(payload).strip()
         return {
             "response_model": payload.get("model", model),
             "id": payload.get("id"),
             "content_preview": content[:160],
         }
+
+    def _post_with_retry(self, path: str, body: dict[str, object], *, context: str) -> dict[str, object]:
+        last_error: Exception | None = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                result = self._post(path, body)
+                if attempt > 1:
+                    log.info("LLM %s succeeded on attempt %d", context, attempt)
+                return result
+            except (urllib.error.URLError, OSError, TimeoutError) as exc:
+                last_error = exc
+                if attempt < self.max_retries:
+                    wait = RETRY_BACKOFF_SECONDS * attempt
+                    log.warning("LLM %s attempt %d failed: %s — retrying in %.1fs", context, attempt, exc, wait)
+                    time.sleep(wait)
+        log.error("LLM %s failed after %d attempts", context, self.max_retries)
+        raise last_error  # type: ignore[misc]
 
     def _post(self, path: str, body: dict[str, object]) -> dict[str, object]:
         request = urllib.request.Request(

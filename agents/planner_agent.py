@@ -3,10 +3,14 @@ from __future__ import annotations
 from collections import Counter
 
 from agents.contracts import PlanStep, TriageItem
+from common.helpers import find_assignment, non_empty_text, string_list
+from common.log import get_logger
 from llm.client import build_bailian_client, provider_request_error
 from models.schema import to_jsonable
 
-FINDING_RULE_CONFIG = {
+log = get_logger("decoupling.planner")
+
+FINDING_RULE_CONFIG: dict[str, dict[str, object]] = {
     "RULE_A": {
         "category": "architecture_boundary",
         "owner": "Refactor Agent",
@@ -72,6 +76,32 @@ FINDING_RULE_CONFIG = {
             "为打破循环而引入超出预期的大范围改动。",
         ],
         "deterministic_tools": ["pytest", "ruff"],
+    },
+    "RULE_F": {
+        "category": "structural_complexity",
+        "owner": "Refactor Agent",
+        "title": "拆分过大的文件或类",
+        "success_criteria": [
+            "被拆分的文件行数降至合理范围。",
+            "被拆分的类各自只承担单一职责。",
+        ],
+        "rollback_conditions": [
+            "拆分导致公共接口变化或跨模块依赖增加。",
+        ],
+        "deterministic_tools": ["pytest", "ruff"],
+    },
+    "RULE_G": {
+        "category": "architecture_boundary",
+        "owner": "Refactor Agent",
+        "title": "将数据库操作从业务层下沉到数据访问层",
+        "success_criteria": [
+            "非数据层文件不再直接包含高置信度数据库操作。",
+            "数据库操作收敛到 repository 或 dao 模块。",
+        ],
+        "rollback_conditions": [
+            "业务逻辑与数据访问之间的抽象层引入了过高的复杂度。",
+        ],
+        "deterministic_tools": ["pytest"],
     },
 }
 
@@ -168,7 +198,7 @@ def run_planner_agent(
     model_routing: dict[str, object],
     repo_files: list[str],
 ) -> dict[str, object]:
-    assignment = _find_assignment(model_routing, "planner_triage_review")
+    assignment = find_assignment(model_routing, "planner_triage_review")
     triage_with_generation = dict(triage_artifact)
     triage_with_generation["generation"] = {
         "mode": "deterministic",
@@ -182,6 +212,7 @@ def run_planner_agent(
 
     client = build_bailian_client()
     if client is None or assignment is None:
+        log.info("Planner running in deterministic fallback mode")
         return {
             "triage": triage_with_generation,
             "action_plan": fallback_action_plan,
@@ -261,13 +292,6 @@ def _priority_for_score(score: int) -> str:
     if score >= 60:
         return "P1"
     return "P2"
-
-
-def _find_assignment(model_routing: dict[str, object], role: str) -> dict[str, object] | None:
-    for item in model_routing.get("assignments", []):
-        if item.get("role") == role:
-            return item
-    return None
 
 
 def _planner_runtime(
@@ -414,19 +438,19 @@ def _sanitize_step(
 
     return {
         "step_id": f"STEP-{index:02d}",
-        "title": _non_empty_text(raw_step.get("title"), fallback_step["title"]),
-        "category": _non_empty_text(raw_step.get("category"), triage_item["category"]),
+        "title": non_empty_text(raw_step.get("title"), fallback_step["title"]),
+        "category": non_empty_text(raw_step.get("category"), triage_item["category"]),
         "priority": priority,
-        "owner": _non_empty_text(raw_step.get("owner"), fallback_step["owner"]),
+        "owner": non_empty_text(raw_step.get("owner"), fallback_step["owner"]),
         "files": files,
         "finding_rule": finding_rule,
-        "rationale": _non_empty_text(raw_step.get("rationale"), triage_item["rationale"]),
-        "success_criteria": _string_list(raw_step.get("success_criteria"), fallback_step["success_criteria"]),
-        "rollback_conditions": _string_list(
+        "rationale": non_empty_text(raw_step.get("rationale"), triage_item["rationale"]),
+        "success_criteria": string_list(raw_step.get("success_criteria"), fallback_step["success_criteria"]),
+        "rollback_conditions": string_list(
             raw_step.get("rollback_conditions"),
             fallback_step["rollback_conditions"],
         ),
-        "deterministic_tools": _string_list(
+        "deterministic_tools": string_list(
             raw_step.get("deterministic_tools"),
             fallback_step["deterministic_tools"],
         ),
@@ -451,17 +475,8 @@ def _config_to_step(config: dict[str, object], triage_item: dict[str, object], i
     }
 
 
-def _non_empty_text(value: object, fallback: str) -> str:
-    return value.strip() if isinstance(value, str) and value.strip() else fallback
-
-
-def _string_list(value: object, fallback: list[str]) -> list[str]:
-    if not isinstance(value, list):
-        return fallback
-    items = [item.strip() for item in value if isinstance(item, str) and item.strip()]
-    return items or fallback
 
 
 def _merge_guards(value: object) -> list[str]:
-    guards = _string_list(value, [])
+    guards = string_list(value, [])
     return list(dict.fromkeys([*MANDATORY_GUARDS, *guards]))

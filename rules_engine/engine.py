@@ -2,15 +2,20 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
+from common.log import get_logger
 from models.schema import Finding, to_jsonable
 from rules.config import (
     ENV_RULE_EXCLUDED_PATH_KEYWORDS,
     HANDLER_PATH_KEYWORDS,
+    OVERSIZED_CLASS_METHOD_THRESHOLD,
+    OVERSIZED_FILE_LINE_THRESHOLD,
     UTILS_CONSUMER_PACKAGE_THRESHOLD,
     UTILS_OVERUSE_THRESHOLD,
 )
 
 CONFIDENCE_LABELS = {"high": "高", "medium": "中", "low": "低"}
+
+log = get_logger("decoupling.rules_engine")
 
 
 def detect_import_cycles(import_graph: dict[str, object]) -> list[list[str]]:
@@ -72,6 +77,7 @@ def run_rules(
     utils_usage: dict[str, object],
     global_state: dict[str, object],
     cycles: list[list[str]] | None = None,
+    definitions: dict[str, object] | None = None,
 ) -> dict[str, object]:
     findings: list[Finding] = []
     cycles = cycles if cycles is not None else detect_import_cycles(import_graph)
@@ -81,10 +87,15 @@ def run_rules(
     findings.extend(_utils_overuse_findings(utils_usage))
     findings.extend(_global_state_findings(global_state))
     findings.extend(_cycle_findings(cycles))
+    findings.extend(_oversized_file_findings(definitions))
+    findings.extend(_cross_layer_db_findings(db_usage, import_graph))
 
     severity_order = {"high": 0, "medium": 1, "low": 2}
     findings.sort(key=lambda item: (severity_order.get(item.severity, 99), item.rule_id, item.files))
     counts = Counter(finding.severity for finding in findings)
+
+    log.info("rules engine: %d findings generated (high=%d, medium=%d, low=%d)",
+             len(findings), counts.get("high", 0), counts.get("medium", 0), counts.get("low", 0))
 
     return {
         "findings": [to_jsonable(finding) for finding in findings],
@@ -242,11 +253,12 @@ def _cycle_findings(cycles: list[list[str]]) -> list[Finding]:
     findings: list[Finding] = []
 
     for cycle in cycles:
+        severity = "high" if len(cycle) >= 4 else "medium"
         findings.append(
             Finding(
                 rule_id="RULE_E",
                 rule_name="检测到简单循环 Import",
-                severity="medium",
+                severity=severity,
                 files=cycle,
                 evidence=[" -> ".join(cycle)],
                 explanation=(
@@ -261,20 +273,117 @@ def _cycle_findings(cycles: list[list[str]]) -> list[Finding]:
     return findings
 
 
+def _oversized_file_findings(definitions: dict[str, object] | None) -> list[Finding]:
+    if definitions is None:
+        return []
+
+    findings: list[Finding] = []
+    for file_entry in definitions.get("files", []):
+        file_path = file_entry["file"]
+        line_count = file_entry.get("line_count", 0)
+        if line_count < OVERSIZED_FILE_LINE_THRESHOLD:
+            continue
+
+        oversized_classes = [
+            defn
+            for defn in file_entry.get("definitions", [])
+            if defn.get("type") == "class" and defn.get("method_count", 0) >= OVERSIZED_CLASS_METHOD_THRESHOLD
+        ]
+
+        evidence = [f"文件共 {line_count} 行，超过 {OVERSIZED_FILE_LINE_THRESHOLD} 行阈值"]
+        for cls in oversized_classes[:2]:
+            evidence.append(f"类 {cls['name']} 包含 {cls['method_count']} 个方法")
+
+        findings.append(
+            Finding(
+                rule_id="RULE_F",
+                rule_name="文件或类规模过大",
+                severity="medium",
+                files=[file_path],
+                evidence=evidence,
+                explanation=(
+                    "单文件行数过多或单个类方法数过多，通常说明职责不够聚焦，难以测试和维护。"
+                ),
+                suggestion=(
+                    "建议按职责边界拆分大文件，将大类中可独立的方法组提取为单独的模块或服务类。"
+                ),
+            )
+        )
+
+    return findings
+
+
+def _cross_layer_db_findings(db_usage: dict[str, object], import_graph: dict[str, object]) -> list[Finding]:
+    """Detect non-handler files in service/domain layers that directly access DB."""
+    findings: list[Finding] = []
+
+    for file_entry in db_usage.get("files", []):
+        file_path = file_entry["file"]
+        # Skip handlers (already covered by RULE_A) and obvious data-access layers.
+        if _is_handler_path(file_path):
+            continue
+        if _is_data_access_path(file_path):
+            continue
+
+        high_signals = [
+            signal
+            for signal in file_entry.get("signals", [])
+            if signal["kind"] in {"call", "attribute"} and signal["confidence"] == "high"
+        ]
+        if len(high_signals) < 2:
+            continue
+
+        evidence = [
+            f'{signal["signal"]}（第 {signal["line"]} 行）'
+            for signal in high_signals[:3]
+        ]
+        findings.append(
+            Finding(
+                rule_id="RULE_G",
+                rule_name="非数据层文件直接执行数据库操作",
+                severity="medium",
+                files=[file_path],
+                evidence=evidence,
+                explanation=(
+                    "服务层或领域层文件直接包含多个高置信度数据库操作，说明数据访问没有被下沉到独立的数据访问层。"
+                ),
+                suggestion=(
+                    "建议把数据库操作收敛到 repository/dao 层，让业务逻辑通过抽象接口访问数据。"
+                ),
+            )
+        )
+
+    return findings
+
+
 def _is_handler_path(file_path: str) -> bool:
     lower_path = file_path.lower()
     return any(keyword in lower_path for keyword in HANDLER_PATH_KEYWORDS)
+
+
+def _is_data_access_path(file_path: str) -> bool:
+    lower_path = file_path.lower()
+    return any(keyword in lower_path for keyword in ("repo", "repository", "dao", "model", "orm", "db"))
 
 
 def _is_business_path(file_path: str) -> bool:
     lower_path = file_path.lower().replace("\\", "/")
     parts = lower_path.split("/")
     filename = parts[-1]
+    # Strip .py extension for filename checks.
+    filename_stem = filename[:-3] if filename.endswith(".py") else filename
     for keyword in ENV_RULE_EXCLUDED_PATH_KEYWORDS:
-        if keyword.endswith(".py") and filename == keyword:
+        if keyword.endswith(".py"):
+            # Exact filename match for entries like "conftest.py" or "manage.py".
+            if filename == keyword:
+                return False
+        elif keyword in parts[:-1]:
+            # Directory component match (e.g. "tests" in path).
             return False
-        if keyword in parts:
+        elif filename_stem == keyword:
+            # Exact stem match (e.g. filename is "config.py" and keyword is "config").
             return False
-        if filename.startswith(f"{keyword}_") or filename.startswith(keyword):
+        elif filename_stem.startswith(f"{keyword}_") and keyword in ("test", "tests"):
+            # Only exclude "test_*" prefixed filenames, not "config_helper" etc.
             return False
     return True

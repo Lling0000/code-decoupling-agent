@@ -12,11 +12,13 @@ def scan_definitions(context: RepoContext) -> dict[str, object]:
     for parsed in context.files:
         collector = _DefinitionCollector(parsed.module_name)
         collector.visit(parsed.tree)
+        line_count = len(parsed.source.splitlines()) if parsed.source else 0
         files_artifact.append(
             {
                 "file": parsed.relative_path,
                 "module": parsed.module_name,
                 "definitions": collector.records,
+                "line_count": line_count,
             }
         )
         for key in totals:
@@ -37,6 +39,10 @@ class _DefinitionCollector(ast.NodeVisitor):
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         qualified_name = self._qualified_name(node.name)
+        method_count = sum(
+            1 for child in ast.iter_child_nodes(node)
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+        )
         self.records.append(
             {
                 "name": node.name,
@@ -44,6 +50,7 @@ class _DefinitionCollector(ast.NodeVisitor):
                 "type": "class",
                 "line": node.lineno,
                 "end_line": getattr(node, "end_lineno", node.lineno),
+                "method_count": method_count,
             }
         )
         self.counts["classes"] += 1

@@ -65,26 +65,39 @@ DB_IMPORTED_CALL_NAMES = (
     "cursor",
 )
 
-DB_OPERATION_METHODS = (
+# DB methods split by confidence to reduce false positives.
+# HIGH: almost certainly a DB operation regardless of context.
+DB_HIGH_CONFIDENCE_METHODS = (
     "execute",
-    "query",
     "commit",
     "rollback",
+    "bulk_save_objects",
+    "bulk_insert_mappings",
+    "insert_one",
+    "update_one",
+    "find_one",
+    "executemany",
+    "fetchone",
+    "fetchall",
+    "fetchmany",
+)
+
+# LOW: could be a DB operation but also common on non-DB objects (lists, dicts, caches).
+# These are only flagged when stronger context is present.
+DB_LOW_CONFIDENCE_METHODS = (
     "add",
+    "get",
+    "filter",
+    "save",
+    "find",
+    "where",
+    "query",
     "delete",
     "insert",
     "update",
-    "filter",
-    "where",
-    "get",
-    "save",
-    "find",
-    "find_one",
-    "insert_one",
-    "update_one",
-    "bulk_save_objects",
-    "bulk_insert_mappings",
 )
+
+DB_OPERATION_METHODS = DB_HIGH_CONFIDENCE_METHODS + DB_LOW_CONFIDENCE_METHODS
 
 DB_CALL_KEYWORDS = (
     "db.session",
@@ -100,9 +113,14 @@ DB_ROOT_NAME_HINTS = (
     "connection",
     "conn",
     "cursor",
-    "client",
     "collection",
     "queryset",
+)
+
+# "client" removed from DB_ROOT_NAME_HINTS — too generic, causes false positives.
+# DB signals on "client" objects are only flagged when using high-confidence methods.
+DB_GENERIC_ROOT_HINTS = (
+    "client",
 )
 
 GLOBAL_STATE_IGNORED_NAMES = (
@@ -130,3 +148,34 @@ GLOBAL_STATE_MUTATION_METHODS = (
     "discard",
     "__setitem__",
 )
+
+# Safe methods that should NOT be treated as mutations even on global objects.
+GLOBAL_STATE_SAFE_METHODS = frozenset((
+    "copy",
+    "keys",
+    "values",
+    "items",
+    "union",
+    "intersection",
+    "difference",
+    "symmetric_difference",
+    "issubset",
+    "issuperset",
+    "isdisjoint",
+    "__len__",
+    "__contains__",
+    "__iter__",
+    "__repr__",
+    "__str__",
+    "__getitem__",
+    "__hash__",
+    "count",
+    "index",
+    "get",
+    "freeze",
+    "frozen",
+))
+
+# Thresholds for the oversized file/class rule (RULE_F).
+OVERSIZED_FILE_LINE_THRESHOLD = 500
+OVERSIZED_CLASS_METHOD_THRESHOLD = 15

@@ -6,7 +6,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from common.log import get_logger
 from policy.engine import evaluate_plan
+
+log = get_logger("decoupling.gate_runner")
+SUBPROCESS_TIMEOUT_SECONDS = 300
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_GATE_SPEC_PATH = PROJECT_ROOT / "config" / "gate_spec.json"
@@ -324,21 +328,32 @@ def _manual_review_check(*, check_id: str, owner: str, reason: str) -> dict[str,
 
 
 def _execute_command(*, command: str, workdir: Path) -> dict[str, object]:
-    completed = subprocess.run(
-        command,
-        cwd=workdir,
-        shell=True,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return {
-        "command": command,
-        "workdir": workdir.as_posix(),
-        "returncode": completed.returncode,
-        "stdout_preview": completed.stdout[-1200:],
-        "stderr_preview": completed.stderr[-1200:],
-    }
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=workdir,
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=SUBPROCESS_TIMEOUT_SECONDS,
+        )
+        return {
+            "command": command,
+            "workdir": workdir.as_posix(),
+            "returncode": completed.returncode,
+            "stdout_preview": completed.stdout[-1200:],
+            "stderr_preview": completed.stderr[-1200:],
+        }
+    except subprocess.TimeoutExpired:
+        log.error("Command timed out after %ds: %s", SUBPROCESS_TIMEOUT_SECONDS, command)
+        return {
+            "command": command,
+            "workdir": workdir.as_posix(),
+            "returncode": -1,
+            "stdout_preview": "",
+            "stderr_preview": f"Command timed out after {SUBPROCESS_TIMEOUT_SECONDS} seconds.",
+        }
 
 
 def _finalize_gate(*, gate_spec: dict[str, object], checks: list[dict[str, object]]) -> dict[str, object]:

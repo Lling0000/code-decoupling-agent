@@ -1,0 +1,25 @@
+{
+  "_doc": "Priority scoring weights for module ranking. Higher weight = more influence on priority score.",
+  "weights": {
+    "file_count": 1,
+    "import_count": 1,
+    "definition_count": 1,
+    "upstream_count": 2,
+    "downstream_count": 1,
+    "cross_layer_dependency_count": 2,
+    "db_signal_count": 3,
+    "global_risk_count": 3,
+    "env_read_count": 1,
+    "git_change_cap": 10,
+    "no_test_penalty": 4,
+    "finding_count": 2
+  },
+  "rationale": {
+    "upstream_count": "2x: high fan-in modules affect more consumers when changed",
+    "db_signal_count": "3x: DB coupling is the hardest to undo and causes the most cascading risk",
+    "global_risk_count": "3x: mutable shared state is the top source of hidden side-effects",
+    "cross_layer_dependency_count": "2x: cross-layer deps indicate architectural boundary violations",
+    "no_test_penalty": "4: modules without test coverage are riskier to change",
+    "finding_count": "2x: more findings indicate more accumulated debt"
+  }
+}
