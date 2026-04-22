@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from common.helpers import is_non_product_file
 from models.schema import RepoContext
 
 SEVERITY_LABELS = {"high": "高", "medium": "中", "low": "低"}
@@ -81,8 +82,7 @@ def render_summary(
 
     import_heavy = sorted(
         import_graph.get("files", []),
-        key=lambda item: len(item["imports"]),
-        reverse=True,
+        key=lambda item: (is_non_product_file(item["file"]), -len(item["imports"]), item["file"]),
     )[:5]
     if import_heavy:
         for item in import_heavy:
@@ -127,7 +127,7 @@ def render_summary(
         ]
     )
     db_files = [item for item in db_usage.get("files", []) if item["signal_count"] > 0]
-    db_files.sort(key=lambda item: item["signal_count"], reverse=True)
+    db_files.sort(key=lambda item: (is_non_product_file(item["file"]), -item["signal_count"], item["file"]))
     if db_files:
         for item in db_files[:10]:
             lines.append(f"- `{item['file']}` 命中 {item['signal_count']} 个数据库/ORM 信号")
@@ -142,7 +142,15 @@ def render_summary(
         ]
     )
     if utils_usage.get("modules"):
-        for item in utils_usage["modules"][:10]:
+        utils_modules = sorted(
+            utils_usage["modules"],
+            key=lambda item: (
+                all(is_non_product_file(file) for file in item.get("files", [])),
+                -item["file_count"],
+                item["module"],
+            ),
+        )
+        for item in utils_modules[:10]:
             lines.append(
                 f"- `{item['module']}` 被 {item['file_count']} 个文件依赖，覆盖 {item.get('consumer_package_count', 0)} 个包"
             )
@@ -157,10 +165,21 @@ def render_summary(
         ]
     )
     risky_files = [item for item in global_state.get("files", []) if item["risk_count"] > 0]
-    risky_files.sort(key=lambda item: item["risk_count"], reverse=True)
-    if risky_files:
-        for item in risky_files[:10]:
+    product_risky_files = [item for item in risky_files if not is_non_product_file(item["file"])]
+    non_product_risky_files = [item for item in risky_files if is_non_product_file(item["file"])]
+    product_risky_files.sort(key=lambda item: (-item["risk_count"], item["file"]))
+    non_product_risky_files.sort(key=lambda item: (-item["risk_count"], item["file"]))
+    if product_risky_files:
+        for item in product_risky_files[:10]:
             lines.append(f"- `{item['file']}` 命中 {item['risk_count']} 个疑似全局状态风险")
+        if non_product_risky_files:
+            lines.append(
+                f"- 另有 {len(non_product_risky_files)} 个 tests/docs 风险已在 findings 阶段默认忽略"
+            )
+    elif non_product_risky_files:
+        lines.append(
+            f"- 在 tests/docs 中发现 {len(non_product_risky_files)} 个疑似全局状态风险；这些路径默认不进入 findings"
+        )
     else:
         lines.append("- 未发现疑似可变全局状态")
 

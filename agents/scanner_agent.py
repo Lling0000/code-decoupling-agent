@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from agents.contracts import RepoInventory
-from common.helpers import is_test_file
+from common.helpers import is_non_product_file, is_test_file
 from models.schema import RepoContext, to_jsonable
+
+NON_PRODUCT_HOTSPOT_SCORE_DIVISOR = 4
 
 
 def build_repo_inventory(
@@ -27,17 +29,22 @@ def build_repo_inventory(
 
     hotspot_files: list[dict[str, object]] = []
     for parsed in context.files:
-        score = (
+        raw_score = (
             import_counts.get(parsed.relative_path, 0)
             + env_counts.get(parsed.relative_path, 0)
             + (db_counts.get(parsed.relative_path, 0) * 2)
             + (global_counts.get(parsed.relative_path, 0) * 2)
         )
+        score = raw_score
+        if is_non_product_file(parsed.relative_path):
+            score = raw_score // NON_PRODUCT_HOTSPOT_SCORE_DIVISOR
         hotspot_files.append(
             {
                 "file": parsed.relative_path,
                 "module": parsed.module_name,
                 "score": score,
+                "raw_score": raw_score,
+                "is_non_product": is_non_product_file(parsed.relative_path),
                 "import_count": import_counts.get(parsed.relative_path, 0),
                 "env_read_count": env_counts.get(parsed.relative_path, 0),
                 "db_signal_count": db_counts.get(parsed.relative_path, 0),
@@ -50,8 +57,10 @@ def build_repo_inventory(
         parse_errors=len(context.scan_errors),
         finding_count=tool_results["findings"]["counts"]["total"],
         has_tests=any(is_test_file(parsed.relative_path) for parsed in context.files),
-        hotspots=sorted(hotspot_files, key=lambda item: item["score"], reverse=True)[:10],
+        hotspots=sorted(
+            hotspot_files,
+            key=lambda item: (item["is_non_product"], -item["score"], item["file"]),
+        )[:10],
     )
     return to_jsonable(inventory)
-
 
