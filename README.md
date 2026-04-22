@@ -156,6 +156,32 @@ output/
     ...
 ```
 
+### Real-world example
+
+The tool has been dogfooded against a well-known open-source repository:
+
+- target repo: `psf/requests`
+- mode: deterministic (`ENABLE_LIVE_AGENTS=0`)
+- scanned Python files: `36`
+- generated findings after the latest noise reduction pass: `5`
+
+Command used:
+
+```bash
+git clone --depth 1 https://github.com/psf/requests.git /tmp/requests-dogfood
+ENABLE_LIVE_AGENTS=0 python3 main.py \
+  --repo /tmp/requests-dogfood \
+  --output /tmp/requests-dogfood-output
+```
+
+What this example showed:
+
+- the tool produced non-empty findings on a real project, not just fixture repos
+- after filtering and downweighting `tests/` and `docs/`, hotspot ranking became product-code-first
+- the remaining findings focused on large product modules such as `src/requests/utils.py`, `src/requests/models.py`, and `src/requests/sessions.py`
+
+This is the right bar for the project right now: useful diagnosis on real repositories, while keeping the output conservative and reviewable.
+
 ---
 
 ## Output
