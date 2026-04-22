@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from os import environ
 from pathlib import Path
+import tempfile
 from unittest.mock import patch
 
 from agents.critic_agent import build_deterministic_review
@@ -71,6 +72,48 @@ class ReportingTests(unittest.TestCase):
         self.assertIn("置信度", summary)
         self.assertIn("Validator 生成方式", summary)
         self.assertIn("疑似可变全局状态", summary)
+
+    def test_summary_marks_non_product_global_state_as_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            tests_dir = repo / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test_state.py").write_text("ITEMS = []\n", encoding="utf-8")
+            context = build_repo_context(repo)
+
+            summary = render_summary(
+                repo_root=repo,
+                context=context,
+                import_graph={"files": [], "cycles": []},
+                definitions={"totals": {"classes": 0, "functions": 0, "methods": 0}},
+                call_graph={"edges": []},
+                env_usage={"variables": []},
+                db_usage={"files": []},
+                utils_usage={"modules": []},
+                global_state={"files": [{"file": "tests/test_state.py", "risk_count": 1}]},
+                findings={"counts": {"total": 0}},
+                validated_findings={
+                    "summary": {"actionable_finding_count": 0, "confirmed": 0, "needs_review": 0, "rejected": 0},
+                    "generation": {"mode": "deterministic_fallback"},
+                    "findings": [],
+                },
+                repo_inventory={"hotspots": []},
+                triage={"summary": {"total": 0}},
+                action_plan={"steps": []},
+                critic_review={
+                    "status": "approved",
+                    "risk_level": "low",
+                    "summary": "ok",
+                    "required_checks": ["pytest"],
+                    "generation": {"mode": "deterministic_fallback"},
+                    "concerns": [],
+                },
+                planner_agent={"mode": "deterministic_fallback"},
+                critic_agent={"mode": "deterministic_fallback"},
+                model_routing={"assignments": [], "providers": []},
+            )
+
+            self.assertIn("这些路径默认不进入 findings", summary)
 
 
 if __name__ == "__main__":

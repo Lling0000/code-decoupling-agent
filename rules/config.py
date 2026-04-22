@@ -22,6 +22,8 @@ UTILS_CONSUMER_PACKAGE_THRESHOLD = 3
 ENV_RULE_EXCLUDED_PATH_KEYWORDS = (
     "test",
     "tests",
+    "doc",
+    "docs",
     "conftest.py",
     "config",
     "configs",
@@ -178,4 +180,6 @@ GLOBAL_STATE_SAFE_METHODS = frozenset((
 
 # Thresholds for the oversized file/class rule (RULE_F).
 OVERSIZED_FILE_LINE_THRESHOLD = 500
+OVERSIZED_FILE_STRONG_LINE_THRESHOLD = 800
 OVERSIZED_CLASS_METHOD_THRESHOLD = 15
+OVERSIZED_CLASS_STRONG_METHOD_THRESHOLD = 25

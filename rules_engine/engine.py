@@ -2,13 +2,16 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
+from common.helpers import is_non_product_file
 from common.log import get_logger
 from models.schema import Finding, to_jsonable
 from rules.config import (
     ENV_RULE_EXCLUDED_PATH_KEYWORDS,
     HANDLER_PATH_KEYWORDS,
     OVERSIZED_CLASS_METHOD_THRESHOLD,
+    OVERSIZED_CLASS_STRONG_METHOD_THRESHOLD,
     OVERSIZED_FILE_LINE_THRESHOLD,
+    OVERSIZED_FILE_STRONG_LINE_THRESHOLD,
     UTILS_CONSUMER_PACKAGE_THRESHOLD,
     UTILS_OVERUSE_THRESHOLD,
 )
@@ -217,6 +220,8 @@ def _global_state_findings(global_state: dict[str, object]) -> list[Finding]:
     findings: list[Finding] = []
 
     for file_entry in global_state.get("files", []):
+        if is_non_product_file(file_entry["file"]):
+            continue
         actionable_globals = [
             item for item in file_entry.get("globals", []) if item.get("finding_candidate")
         ]
@@ -280,17 +285,35 @@ def _oversized_file_findings(definitions: dict[str, object] | None) -> list[Find
     findings: list[Finding] = []
     for file_entry in definitions.get("files", []):
         file_path = file_entry["file"]
-        line_count = file_entry.get("line_count", 0)
-        if line_count < OVERSIZED_FILE_LINE_THRESHOLD:
+        if is_non_product_file(file_path):
             continue
 
-        oversized_classes = [
+        line_count = file_entry.get("line_count", 0)
+        class_definitions = [
             defn
             for defn in file_entry.get("definitions", [])
-            if defn.get("type") == "class" and defn.get("method_count", 0) >= OVERSIZED_CLASS_METHOD_THRESHOLD
+            if defn.get("type") == "class"
         ]
+        oversized_classes = [
+            defn
+            for defn in class_definitions
+            if defn.get("method_count", 0) >= OVERSIZED_CLASS_METHOD_THRESHOLD
+        ]
+        strong_classes = [
+            defn
+            for defn in class_definitions
+            if defn.get("method_count", 0) >= OVERSIZED_CLASS_STRONG_METHOD_THRESHOLD
+        ]
+        has_large_file_signal = line_count >= OVERSIZED_FILE_STRONG_LINE_THRESHOLD
+        has_combined_signal = line_count >= OVERSIZED_FILE_LINE_THRESHOLD and bool(oversized_classes)
+        has_strong_class_signal = bool(strong_classes)
 
-        evidence = [f"文件共 {line_count} 行，超过 {OVERSIZED_FILE_LINE_THRESHOLD} 行阈值"]
+        if not (has_large_file_signal or has_combined_signal or has_strong_class_signal):
+            continue
+
+        evidence: list[str] = []
+        if line_count >= OVERSIZED_FILE_LINE_THRESHOLD:
+            evidence.append(f"文件共 {line_count} 行，超过 {OVERSIZED_FILE_LINE_THRESHOLD} 行阈值")
         for cls in oversized_classes[:2]:
             evidence.append(f"类 {cls['name']} 包含 {cls['method_count']} 个方法")
 

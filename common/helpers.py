@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 
+def _normalized_parts(relative_path: str) -> list[str]:
+    return [part for part in relative_path.replace("\\", "/").split("/") if part]
+
+
 def is_test_file(relative_path: str) -> bool:
     file_name = relative_path.rsplit("/", 1)[-1]
     return (
@@ -8,6 +12,15 @@ def is_test_file(relative_path: str) -> bool:
         or file_name.startswith("test_")
         or file_name.endswith("_test.py")
     )
+
+
+def is_docs_file(relative_path: str) -> bool:
+    parts = _normalized_parts(relative_path)
+    return any(part in {"docs", "doc"} for part in parts[:-1])
+
+
+def is_non_product_file(relative_path: str) -> bool:
+    return is_test_file(relative_path) or is_docs_file(relative_path)
 
 
 def find_assignment(model_routing: dict[str, object], role: str) -> dict[str, object] | None:

@@ -1,24 +1,42 @@
 # Code Decoupling Agent
 
-**A controlled diagnosis system for taming tightly-coupled Python codebases.**
+**See the blast radius before you touch a tightly-coupled Python codebase.**
 
-Every team has one -- the sprawling legacy codebase where imports form cycles, handlers talk directly to the database, environment variables are scattered across dozens of files, and shared utility modules have become implicit dependencies for everything. Refactoring it is terrifying because you cannot see the blast radius.
+Code Decoupling Agent is a controlled diagnosis system for messy Python repositories: import cycles, handlers that reach straight into the database, environment variables read all over the codebase, overused helper modules, and hidden shared state.
 
-Code Decoupling Agent scans your Python repository, maps its structural coupling, and produces a verified diagnosis with actionable refactoring plans -- all under a strict gate system that ensures nothing advances without passing tests, policy checks, and runtime verification.
+Instead of guessing where the coupling is, you point it at a local repository and get:
+
+- deterministic AST-based scan artifacts
+- verified findings instead of raw rule noise
+- a ranked hotspot view of the codebase
+- a bounded action plan with explicit guardrails
+- human-readable Markdown and machine-readable JSON outputs
+
+The goal is not autonomous rewriting. The goal is to make refactoring legible, reviewable, and hard to do recklessly.
+
+---
+
+## Why This Is Useful
+
+- **You can inspect coupling before refactoring** instead of discovering it through broken imports and surprise regressions.
+- **You get structured evidence**: exact files, signals, and rule matches, not vague advice.
+- **You can keep humans in control**: planning and review are explicit, policy constraints are hard-coded, and no code is auto-edited.
+- **You can run it on real repositories quickly** because the runtime path is standard-library-first and deterministic by default.
 
 ---
 
 ## Key Features
 
-- **AST-based static analysis** -- import graphs, call graphs, DB access signals, env variable mapping, global state detection, utils over-dependency tracking
-- **7 diagnostic rules** covering the most common coupling patterns in real-world Python projects
-- **Multi-agent pipeline** -- Governor, Scanner, Validator, Planner, Critic working in sequence with deterministic guardrails
-- **Finding validation** -- raw rule output is never treated as ground truth; every finding is reviewed and assigned a confidence score before entering planning
-- **Hard gate system** -- test gate + policy gate + runtime gate; no iteration proceeds without all three passing
-- **Dual output** -- structured JSON for agent consumption, readable Markdown for humans
-- **Zero mandatory dependencies** -- runs on Python standard library alone
-- **LLM-optional** -- works fully in deterministic fallback mode; optionally connects to DashScope/Bailian-compatible APIs for intelligent review and planning
-- **Fully configurable** -- priority weights, policy rules, model routing, protected paths, and thresholds are all externalized to config files
+- **AST-based static analysis**: import graph, definitions, approximate call graph, env reads, DB/ORM signals, shared utils usage, global state signals
+- **7 diagnosis rules** for common structural coupling patterns in Python systems
+- **Verified findings pipeline**: raw rule hits are reviewed before they become actionable findings
+- **Product-code-first ranking**: tests and docs remain visible in raw artifacts but are downweighted or filtered where they would create diagnosis noise
+- **Multi-agent workflow**: Governor, Scanner, Validator, Planner, Critic, plus deterministic policy enforcement
+- **Hard gates**: test gate, policy gate, and runtime gate define whether an iteration is safe to advance
+- **Dual outputs**: Markdown for humans, JSON for tooling and downstream agents
+- **Zero mandatory runtime dependencies**: standard library only on the deterministic path
+- **LLM-optional**: deterministic fallback works end to end; DashScope/Bailian-compatible APIs are optional
+- **Config-driven behavior**: model routing, policy constraints, priority weights, and gate specs live in external config
 
 ---
 
@@ -87,7 +105,7 @@ Code Decoupling Agent scans your Python repository, maps its structural coupling
 ```bash
 git clone https://github.com/study8677/code-decoupling-agent.git
 cd code-decoupling-agent
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate    # Linux/macOS
 # .venv\Scripts\activate     # Windows
 pip install -r requirements.txt
@@ -95,16 +113,16 @@ pip install -r requirements.txt
 
 Runtime dependencies are **Python standard library only**. The `requirements.txt` exists for development tooling.
 
-### Run
+### Diagnose a repository
 
 ```bash
-python main.py --repo /path/to/your/python/repo --output ./output
+ENABLE_LIVE_AGENTS=0 python3 main.py --repo /path/to/your/python/repo --output ./output
 ```
 
 ### Run with iteration gates
 
 ```bash
-python main.py \
+python3 main.py \
   --repo /path/to/your/python/repo \
   --output ./output \
   --run-gates \
@@ -115,8 +133,27 @@ python main.py \
 ### Check LLM configuration
 
 ```bash
-python main.py --check-llm-config
-python main.py --check-llm-config --output ./output   # also writes health check artifact
+python3 main.py --check-llm-config
+python3 main.py --check-llm-config --output ./output   # also writes health check artifact
+```
+
+### What a run gives you
+
+```text
+output/
+  summary.md
+  artifacts/
+    findings.json
+    validated_findings.json
+    action_plan.json
+    import_graph.json
+    call_graph.json
+    definitions.json
+    env_usage.json
+    db_usage.json
+    utils_usage.json
+    global_state.json
+    ...
 ```
 
 ---
@@ -136,7 +173,7 @@ A single run produces the following artifacts:
 | `artifacts/db_usage.json` | Database/ORM access signals with confidence |
 | `artifacts/utils_usage.json` | Shared utility module dependency counts |
 | `artifacts/global_state.json` | Mutable global state candidates with mutation evidence |
-| `artifacts/findings.json` | Raw rule engine findings |
+| `artifacts/findings.json` | Raw rule engine findings before validation |
 
 ### Agent pipeline artifacts
 
@@ -162,6 +199,8 @@ A single run produces the following artifacts:
 | `module_reports/heavyweight/*.md` | Deep-dive module analysis |
 | `iteration_human_report.md` | Gate results in human-readable form (with `--run-gates`) |
 | `artifacts/iteration_agent_report.json` | Gate results in structured form (with `--run-gates`) |
+
+The raw scan artifacts intentionally keep more detail than the final findings. For example, tests and docs may still appear in scan outputs while being filtered or downweighted in diagnosis-oriented views.
 
 ---
 
@@ -277,10 +316,12 @@ The rule engine runs 7 rules against the scan artifacts:
 | **RULE_C** | Utils Overuse | Shared utils/common/helper modules depended on by 5+ files across 3+ packages | high/medium |
 | **RULE_D** | Mutable Globals | Module-level mutable objects modified inside function scope | high/medium |
 | **RULE_E** | Import Cycles | Strongly connected components in the import graph (Tarjan's algorithm) | high/medium |
-| **RULE_F** | Oversized Files | Files exceeding 500 lines or classes with 15+ methods | medium |
+| **RULE_F** | Structural Oversize | Large files or classes with corroborating structural signals | medium |
 | **RULE_G** | Cross-Layer DB Access | Non-handler, non-data-access files directly performing multiple high-confidence DB operations | medium |
 
 Each finding includes: affected files, evidence lines, a Chinese-language explanation, and a concrete refactoring suggestion.
+
+`RULE_F` is intentionally conservative. A file does not become a finding merely for being long; it needs a stronger size signal or a large-file-plus-large-class combination. Non-product paths such as `tests/` and `docs/` are filtered from this rule.
 
 ---
 
@@ -305,6 +346,12 @@ What agents are explicitly **not** allowed to decide:
 
 This separation exists because diagnosis and planning benefit from intelligence, but verification and enforcement must be mechanical and unchallengeable.
 
+That split is the point of the project:
+
+- deterministic modules establish the facts
+- agent modules interpret, prioritize, and explain
+- policy and gate checks decide whether a proposed iteration is allowed to continue
+
 ---
 
 ## Limitations
@@ -313,6 +360,7 @@ This separation exists because diagnosis and planning benefit from intelligence,
 - Database access detection is signal-based (pattern matching on known ORM/driver names); it will miss unconventional data access patterns
 - Call graph construction is approximate -- indirect calls through variables or decorators may not be captured
 - Only Python `.py` files are analyzed; templates, config files, SQL files, and other languages are not scanned
+- Findings prefer product-code signals; tests and docs may still show up in raw artifacts but are filtered or downweighted in diagnosis-focused stages
 - The Refactor Agent is planning-only; it does not auto-edit code or generate patches
 - Import cycle detection uses Tarjan's SCC algorithm on the static import graph; runtime conditional imports may not be reflected
 - LLM-backed agents require a DashScope/Bailian-compatible API; other providers are not yet supported
