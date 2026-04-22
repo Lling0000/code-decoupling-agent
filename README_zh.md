@@ -115,9 +115,35 @@ python main.py \
 ### 检查 LLM 配置
 
 ```bash
-python main.py --check-llm-config
-python main.py --check-llm-config --output ./output   # 同时写出健康检查产物
+python3 main.py --check-llm-config
+python3 main.py --check-llm-config --output ./output   # 同时写出健康检查产物
 ```
+
+### 一个真实仓库示例
+
+这个工具已经拿真实的开源仓库做过 dogfood：
+
+- 目标仓库：`psf/requests`
+- 运行模式：确定性模式（`ENABLE_LIVE_AGENTS=0`）
+- 扫描到的 Python 文件数：`36`
+- 在最新一轮降噪后生成的 findings 数：`5`
+
+实际使用的命令：
+
+```bash
+git clone --depth 1 https://github.com/psf/requests.git /tmp/requests-dogfood
+ENABLE_LIVE_AGENTS=0 python3 main.py \
+  --repo /tmp/requests-dogfood \
+  --output /tmp/requests-dogfood-output
+```
+
+这次真实跑出来的结论是：
+
+- 工具在真实项目上能产出非空诊断，不是只会跑 fixture
+- 在对 `tests/` 和 `docs/` 做过滤/降权后，热点排序会更聚焦产品代码
+- 最终保留下来的 finding 主要集中在 `src/requests/utils.py`、`src/requests/models.py`、`src/requests/sessions.py` 这类产品模块
+
+这基本符合当前阶段的目标：先在真实仓库上给出保守、可复核、对重构前判断有帮助的诊断结果。
 
 ---
 
