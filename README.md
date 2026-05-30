@@ -1,5 +1,7 @@
 # Code Decoupling Agent
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 **Find the coupling hotspots in a Python codebase before a refactor turns into a regression hunt.**
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
